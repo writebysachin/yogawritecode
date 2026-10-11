@@ -35,8 +35,13 @@ type OppRow = {
   opportunity_score: number;
   search_intent: string;
   difficulty: string;
-  projects: { id: string; name: string }[];
+  projects: { id: string; name: string } | { id: string; name: string }[] | null;
 };
+
+function oppProject(o: OppRow): { id: string; name: string } | null {
+  if (!o.projects) return null;
+  return Array.isArray(o.projects) ? (o.projects[0] ?? null) : o.projects;
+}
 
 function intentTone(intent: string) {
   if (intent === "commercial") return "brand" as const;
@@ -226,7 +231,7 @@ export default async function OverviewPage({
                     <tr key={o.id} className="transition-colors hover:bg-surface-subtle">
                       <td className="max-w-55 px-5 py-3">
                         <p className="truncate font-medium text-ink">{o.title}</p>
-                        <p className="truncate text-xs text-ink-muted">{o.projects?.[0]?.name}</p>
+                        <p className="truncate text-xs text-ink-muted">{oppProject(o)?.name}</p>
                       </td>
                       <td className="hidden px-3 py-3 md:table-cell">
                         <Badge tone={intentTone(o.search_intent)}>{o.search_intent}</Badge>
@@ -247,7 +252,7 @@ export default async function OverviewPage({
                       </td>
                       <td className="px-5 py-3 text-right">
                         <form action={generateBrief} className="inline">
-                          <input type="hidden" name="projectId" value={o.projects?.[0]?.id ?? ""} />
+                          <input type="hidden" name="projectId" value={oppProject(o)?.id ?? ""} />
                           <input type="hidden" name="opportunityId" value={o.id} />
                           <button type="submit" className="text-xs font-medium text-brand hover:underline">
                             Generate brief

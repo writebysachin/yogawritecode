@@ -55,7 +55,7 @@ export default async function SeoPage() {
 
   const rows = (data ?? []).map((row) => ({
     ...row,
-    projects: row.projects?.[0] ?? null,
+    projects: Array.isArray(row.projects) ? (row.projects[0] ?? null) : (row.projects ?? null),
   })) as OppRow[];
 
   return (

@@ -64,6 +64,8 @@ export default async function PricingPage() {
           monthlyPriceId={monthlyPriceId}
           yearlyPriceId={yearlyPriceId}
           isPro={isPro}
+          email={userData.user?.email ?? undefined}
+          userId={userData.user?.id ?? undefined}
         />
       </div>
 

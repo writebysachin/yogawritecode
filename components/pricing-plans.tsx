@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { ArrowRight, Check, X } from "lucide-react";
-import { DODO_PAYMENT_LINK } from "@/lib/dodo";
+import { buildDodoPaymentLink } from "@/lib/dodo";
 
 type BillingCycle = "monthly" | "yearly";
 
@@ -41,10 +41,14 @@ function FeatureList({ features }: { features: ReadonlyArray<{ label: string; in
 
 export function PricingPlans({
   isPro,
+  email,
+  userId,
 }: {
   monthlyPriceId?: string;
   yearlyPriceId?: string;
   isPro: boolean;
+  email?: string;
+  userId?: string;
 }) {
   const [cycle, setCycle] = useState<BillingCycle>("monthly");
 
@@ -129,7 +133,7 @@ export function PricingPlans({
                 Current Plan
               </button>
             ) : (<a
-                href={DODO_PAYMENT_LINK}
+                href={buildDodoPaymentLink(email, userId)}
                 className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-field bg-brand px-4 text-sm font-medium text-white transition-colors hover:bg-brand-hover"
               >
                 Start 7-day free trial

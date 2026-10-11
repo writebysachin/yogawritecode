@@ -50,12 +50,16 @@ export async function POST(request: Request) {
     const eventType = typeof payload.type === "string" ? payload.type : "";
     const data = (payload.data ?? {}) as Record<string, unknown>;
     const customer = (data.customer ?? {}) as Record<string, unknown>;
-    const email =
+    const metadata = (data.metadata ?? {}) as Record<string, unknown>;
+    const appUserId =
+      typeof metadata.app_user_id === "string" ? metadata.app_user_id : null;
+    const rawEmail =
       typeof customer.email === "string"
         ? customer.email
         : typeof data.customer_email === "string"
           ? data.customer_email
           : null;
+    const email = rawEmail?.trim().toLowerCase() ?? null;
     const subscriptionId =
       typeof data.subscription_id === "string"
         ? data.subscription_id
@@ -76,19 +80,19 @@ export async function POST(request: Request) {
     const ACTIVATING_EVENTS = ["subscription.active", "subscription.renewed", "payment.succeeded"];
 
     if (ACTIVATING_EVENTS.includes(eventType)) {
-      if (!email) {
-        console.error("[dodo webhook] event had no customer email", eventType);
+      if (!email && !appUserId) {
+        console.error("[dodo webhook] event had no customer email or app_user_id", eventType);
         return NextResponse.json({ received: true, handled: false });
       }
       const fullUpdate: Record<string, string> = { subscription_status: "active" };
       if (subscriptionId) fullUpdate.dodo_subscription_id = subscriptionId;
       if (customerId) fullUpdate.dodo_customer_id = customerId;
 
-      const firstAttempt = await supabase
-        .from("profiles")
-        .update(fullUpdate)
-        .eq("email", email)
-        .select("id");
+      // Prefer the stable app user id from checkout metadata. Fall back to a
+      // case-insensitive email match so a checkout typo can't orphan payment.
+      const firstAttempt = appUserId
+        ? await supabase.from("profiles").update(fullUpdate).eq("id", appUserId).select("id")
+        : await supabase.from("profiles").update(fullUpdate).ilike("email", email as string).select("id");
       let error = firstAttempt.error;
       let matched = (firstAttempt.data ?? []).length > 0;
 
@@ -100,11 +104,17 @@ export async function POST(request: Request) {
             "Run supabase/migrations/20261006010000_profiles_dodo_columns.sql",
           error.message,
         );
-        const retry = await supabase
-          .from("profiles")
-          .update({ subscription_status: "active" })
-          .eq("email", email)
-          .select("id");
+        const retry = appUserId
+          ? await supabase
+              .from("profiles")
+              .update({ subscription_status: "active" })
+              .eq("id", appUserId)
+              .select("id")
+          : await supabase
+              .from("profiles")
+              .update({ subscription_status: "active" })
+              .ilike("email", email as string)
+              .select("id");
         error = retry.error;
         matched = (retry.data ?? []).length > 0;
       }

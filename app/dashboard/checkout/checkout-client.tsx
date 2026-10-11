@@ -21,7 +21,7 @@ export function CheckoutClient({ email }: { email?: string }) {
     async function start() {
       try {
         const token = process.env.NEXT_PUBLIC_PADDLE_CLIENT_TOKEN;
-        if (!token) throw new Error("Dodo Payments checkout is not configured.");
+        if (!token) throw new Error("Paddle checkout is not configured.");
 
         const environment = resolvePaddleEnvironment(process.env.NEXT_PUBLIC_PADDLE_ENVIRONMENT);
 
@@ -37,7 +37,7 @@ export function CheckoutClient({ email }: { email?: string }) {
             frameTarget: "dodo-checkout-frame",
             frameInitialHeight: 600,
             frameStyle: "width: 100%; min-height: 600px; border: none;",
-            successUrl: "https://app.yogawritecode.com/welcome",
+            successUrl: "https://app.yogawritecode.com/dashboard/payment-success",
           },
         });
       } catch (err) {
