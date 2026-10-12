@@ -41,10 +41,11 @@ export async function proxy(request: NextRequest) {
 
   const { pathname, hostname } = request.nextUrl;
 
-  // Skip static files and Next.js internals
+  // Skip static files, Next.js internals, and analytics ingest (rewritten to PostHog in next.config.ts)
   if (
     pathname.startsWith("/_next") ||
     pathname.startsWith("/api") ||
+    pathname.startsWith("/ingest") ||
     pathname.startsWith("/auth/callback")
   ) {
     return response;

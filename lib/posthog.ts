@@ -7,7 +7,8 @@ export function initPostHog() {
   if (initialized || typeof window === "undefined") return;
   initialized = true;
   posthog.init("phc_rCBwSrW7nsp8xoEtfFYeAQWUcR4Kj9GamEHzw2amJsrE", {
-    api_host: "https://us.i.posthog.com",
+    api_host: "/ingest",
+    ui_host: "https://us.posthog.com",
     defaults: "2026-05-30",
     person_profiles: "always",
   });
