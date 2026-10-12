@@ -71,6 +71,9 @@ export function DocEditor({
   const [targetKeyword, setTargetKeyword] = useState("");
   const [pending, startTransition] = useTransition();
 
+  const current = (): DocSection[] =>
+    sections.map((s, i) => ({ ...s, content: values[i] ?? "" }));
+
   const liveMarkdown = useMemo(
     () => toMarkdown(title, current()),
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -91,9 +94,6 @@ export function DocEditor({
   const grade = gradeLabel(readability.gradeLevel);
   const readingMinutes = Math.max(1, Math.round(readability.wordCount / 200));
   const seoPassed = seo.checks.filter((c) => c.passed).length;
-
-  const current = (): DocSection[] =>
-    sections.map((s, i) => ({ ...s, content: values[i] ?? "" }));
 
   const runAI = (index: number, aiMode: "draft" | "improve") => {
     const formData = new FormData();
