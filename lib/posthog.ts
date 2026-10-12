@@ -5,9 +5,11 @@ let initialized = false;
 /** Initialize PostHog once. Call only after the visitor accepts analytics cookies. */
 export function initPostHog() {
   if (initialized || typeof window === "undefined") return;
+  const token = process.env.NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN;
+  if (!token) return;
   initialized = true;
-  posthog.init("phc_rCBwSrW7nsp8xoEtfFYeAQWUcR4Kj9GamEHzw2amJsrE", {
-    api_host: "/ingest",
+  posthog.init(token, {
+    api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST || "/ingest",
     ui_host: "https://us.posthog.com",
     defaults: "2026-05-30",
     person_profiles: "always",
