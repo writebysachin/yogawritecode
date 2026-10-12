@@ -69,6 +69,7 @@ export function DocEditor({
   const [notice, setNotice] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
   const [targetKeyword, setTargetKeyword] = useState("");
+  const [focused, setFocused] = useState<number | null>(null);
   const [pending, startTransition] = useTransition();
 
   const current = (): DocSection[] =>
@@ -94,6 +95,12 @@ export function DocEditor({
   const grade = gradeLabel(readability.gradeLevel);
   const readingMinutes = Math.max(1, Math.round(readability.wordCount / 200));
   const seoPassed = seo.checks.filter((c) => c.passed).length;
+
+  const sectionWords = useMemo(
+    () => values.map((v) => (v.match(/[A-Za-z0-9']+/g) ?? []).length),
+    [values],
+  );
+  const draftedCount = sectionWords.filter((n) => n > 0).length;
 
   const runAI = (index: number, aiMode: "draft" | "improve") => {
     const formData = new FormData();
@@ -156,6 +163,9 @@ export function DocEditor({
           <button type="button" onClick={() => setMode("preview")} className={tabClass(mode === "preview")}>
             Preview
           </button>
+          <span className="ml-2 hidden text-xs text-ink-muted sm:inline">
+            {draftedCount} of {sections.length} drafted · {readability.wordCount.toLocaleString()} words
+          </span>
         </div>
         <div className="flex items-center gap-2">
           <button
@@ -184,23 +194,68 @@ export function DocEditor({
           className="font-sans w-full border-0 bg-transparent text-3xl font-semibold tracking-tight text-ink focus:outline-none"
         />
 
+        {sections.length > 1 ? (
+          <nav aria-label="Sections" className="mt-4 flex flex-wrap gap-2">
+            {sections.map((s, i) => (
+              <a
+                key={`nav-${s.heading}-${i}`}
+                href={`#doc-section-${i}`}
+                className="rounded-control border border-line px-2.5 py-1 text-xs font-medium text-ink-secondary transition-colors hover:border-brand hover:text-brand"
+              >
+                {String(i + 1).padStart(2, "0")} · {(s.heading || "Untitled").slice(0, 28)}
+              </a>
+            ))}
+          </nav>
+        ) : null}
+
         {mode === "write" ? (
-          sections.map((s, i) => (
-            <section key={s.heading + i} className="mt-8">
-              <h2 className="font-sans text-xl font-semibold tracking-tight text-ink">
-                {s.heading}
-              </h2>
-              {s.purpose ? <p className="mt-1 text-xs text-ink-muted">{s.purpose}</p> : null}
+          <div className="mt-6 space-y-4">
+          {sections.map((s, i) => {
+            const words = sectionWords[i] ?? 0;
+            const isActive = focused === i;
+            return (
+            <section
+              key={s.heading + i}
+              id={`doc-section-${i}`}
+              className={
+                isActive
+                  ? "scroll-mt-24 rounded-card border-2 border-brand bg-surface p-5 transition-colors"
+                  : "scroll-mt-24 rounded-card border border-line bg-surface-subtle/50 p-5 transition-colors"
+              }
+            >
+              <div className="flex items-center gap-3">
+                <span className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-control bg-brand-soft text-xs font-bold text-brand">
+                  {String(i + 1).padStart(2, "0")}
+                </span>
+                <h2 className="font-sans min-w-0 flex-1 truncate text-lg font-semibold tracking-tight text-ink">
+                  {s.heading}
+                </h2>
+                <span
+                  className={
+                    words > 0
+                      ? "inline-flex shrink-0 items-center gap-1.5 text-xs text-ink-secondary"
+                      : "inline-flex shrink-0 items-center gap-1.5 text-xs text-ink-muted"
+                  }
+                >
+                  <span
+                    className={words > 0 ? "h-1.5 w-1.5 rounded-full bg-success" : "h-1.5 w-1.5 rounded-full bg-line"}
+                  />
+                  {words > 0 ? `${words.toLocaleString()} words` : "Empty"}
+                </span>
+              </div>
+              {s.purpose ? <p className="mt-1.5 text-xs leading-5 text-ink-muted">{s.purpose}</p> : null}
               <textarea
                 rows={Math.max(6, (values[i] ?? "").split("\n").length + 2)}
                 value={values[i] ?? ""}
                 onChange={(e) =>
                   setValues((old) => old.map((v, idx) => (idx === i ? e.target.value : v)))
                 }
+                onFocus={() => setFocused(i)}
+                onBlur={() => setFocused((old) => (old === i ? null : old))}
                 placeholder="Write here, or let AI draft this section."
-                className="mt-3 w-full resize-y border-0 bg-transparent text-[15px] leading-7 text-ink-secondary focus:outline-none"
+                className="mt-3 w-full resize-y rounded-control border border-transparent bg-transparent px-3 py-2 text-[15px] leading-7 text-ink-secondary focus:border-line focus:bg-surface focus:outline-none"
               />
-              <div className="mt-1 flex items-center gap-4">
+              <div className="mt-1 flex items-center gap-4 px-3">
                 <button
                   type="button"
                   disabled={busy === i}
@@ -219,14 +274,21 @@ export function DocEditor({
                 </button>
               </div>
             </section>
-          ))
+            );
+          })}
+          </div>
         ) : (
-          <article className="mt-6 space-y-8">
+          <article className="mt-6 space-y-4">
             {current().map((s, i) => (
-              <section key={s.heading + i}>
-                <h2 className="font-sans text-xl font-semibold tracking-tight text-ink">
-                  {s.heading}
-                </h2>
+              <section key={s.heading + i} id={`doc-section-${i}`} className="scroll-mt-24 rounded-card border border-line bg-surface-subtle/50 p-5">
+                <div className="flex items-center gap-3">
+                  <span className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-control bg-brand-soft text-xs font-bold text-brand">
+                    {String(i + 1).padStart(2, "0")}
+                  </span>
+                  <h2 className="font-sans min-w-0 flex-1 truncate text-lg font-semibold tracking-tight text-ink">
+                    {s.heading}
+                  </h2>
+                </div>
                 <div className="mt-3">
                   <Prose text={s.content} />
                 </div>
