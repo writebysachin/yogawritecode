@@ -24,6 +24,61 @@ function toMarkdown(title: string, sections: DocSection[]) {
   return parts.join("\n\n");
 }
 
+function escapeHtml(text: string): string {
+  return text
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;");
+}
+
+function inlineHtml(text: string): string {
+  return escapeHtml(text).replace(/\*\*(.+?)\*\*/g, "<strong>$1</strong>");
+}
+
+function toHtmlDocument(title: string, sections: DocSection[]): string {
+  const safeTitle = escapeHtml(title || "Untitled draft");
+  const body = sections
+    .map((s) => {
+      const blocks = (s.content || "_(not drafted yet)_")
+        .split(/\n{2,}/)
+        .map((block) => {
+          const lines = block.split("\n");
+          if (lines.every((l) => l.trim().startsWith("- ") || l.trim() === "")) {
+            const items = lines
+              .filter((l) => l.trim().startsWith("- "))
+              .map((l) => `<li>${inlineHtml(l.trim().slice(2))}</li>`)
+              .join("");
+            return `<ul>${items}</ul>`;
+          }
+          return `<p>${inlineHtml(block).replace(/\n/g, "<br />")}</p>`;
+        })
+        .join("\n");
+      return `<h2>${escapeHtml(s.heading)}</h2>\n${blocks}`;
+    })
+    .join("\n");
+  return `<!DOCTYPE html>\n<html lang="en">\n<head>\n<meta charset="utf-8" />\n<title>${safeTitle}</title>\n<style>body{font-family:Georgia,serif;max-width:720px;margin:40px auto;padding:0 20px;line-height:1.7;color:#111}h1{font-size:2em}h2{margin-top:1.8em}</style>\n</head>\n<body>\n<h1>${safeTitle}</h1>\n${body}\n</body>\n</html>`;
+}
+
+function slugify(text: string): string {
+  const slug = text
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, "-")
+    .replace(/^-+|-+$/g, "");
+  return slug || "draft";
+}
+
+function downloadFile(filename: string, mime: string, text: string): void {
+  const blob = new Blob([text], { type: `${mime};charset=utf-8` });
+  const url = URL.createObjectURL(blob);
+  const link = document.createElement("a");
+  link.href = url;
+  link.download = filename;
+  document.body.appendChild(link);
+  link.click();
+  link.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
 function Prose({ text }: { text: string }) {
   const blocks = text.split(/\n{2,}/);
   return (
@@ -134,6 +189,26 @@ export function DocEditor({
     }
   };
 
+  const exportMarkdown = () => {
+    downloadFile(`${slugify(title)}.md`, "text/markdown", toMarkdown(title, current()));
+  };
+
+  const exportHtml = () => {
+    downloadFile(`${slugify(title)}.html`, "text/html", toHtmlDocument(title, current()));
+  };
+
+  const printPdf = () => {
+    const win = window.open("", "_blank", "width=800,height=900");
+    if (!win) {
+      setNotice("Pop-up blocked — allow pop-ups to print.");
+      return;
+    }
+    win.document.write(toHtmlDocument(title, current()));
+    win.document.close();
+    win.focus();
+    win.print();
+  };
+
   const tabClass = (active: boolean) =>
     active
       ? "rounded-control bg-brand-soft px-3 py-1.5 text-sm font-medium text-brand"
@@ -167,14 +242,42 @@ export function DocEditor({
             {draftedCount} of {sections.length} drafted · {readability.wordCount.toLocaleString()} words
           </span>
         </div>
-        <div className="flex items-center gap-2">
+        <div className="flex flex-wrap items-center gap-2">
           <button
             type="button"
             onClick={copyMarkdown}
             className="inline-flex h-9 items-center rounded-field border border-line bg-surface px-3 text-sm font-medium text-ink transition-colors hover:bg-surface-subtle"
           >
-            {copied ? "Copied!" : "Copy markdown"}
+            {copied ? "Copied!" : "Copy"}
           </button>
+          <details className="relative">
+            <summary className="inline-flex h-9 cursor-pointer list-none items-center rounded-field border border-line bg-surface px-3 text-sm font-medium text-ink transition-colors hover:bg-surface-subtle [&::-webkit-details-marker]:hidden">
+              Export
+            </summary>
+            <div className="absolute right-0 z-10 mt-2 w-44 rounded-card border border-line bg-surface p-1.5 shadow-pop">
+              <button
+                type="button"
+                onClick={exportMarkdown}
+                className="block w-full rounded-control px-3 py-2 text-left text-sm text-ink-secondary transition-colors hover:bg-surface-subtle hover:text-ink"
+              >
+                Markdown (.md)
+              </button>
+              <button
+                type="button"
+                onClick={exportHtml}
+                className="block w-full rounded-control px-3 py-2 text-left text-sm text-ink-secondary transition-colors hover:bg-surface-subtle hover:text-ink"
+              >
+                Web page (.html)
+              </button>
+              <button
+                type="button"
+                onClick={printPdf}
+                className="block w-full rounded-control px-3 py-2 text-left text-sm text-ink-secondary transition-colors hover:bg-surface-subtle hover:text-ink"
+              >
+                Print / PDF
+              </button>
+            </div>
+          </details>
           <button
             type="submit"
             disabled={pending}
