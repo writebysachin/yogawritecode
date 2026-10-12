@@ -1,11 +1,13 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useEffect, useMemo, useState, useTransition } from "react";
 import {
   draftSection,
   improveSection,
   saveDraft,
 } from "@/app/dashboard/projects/[id]/editor/actions";
+import { analyzeReadability, gradeLabel } from "@/lib/analysis/readability";
+import { analyzeSeo } from "@/lib/analysis/seo";
 
 export type DocSection = {
   heading: string;
@@ -66,7 +68,29 @@ export function DocEditor({
   const [busy, setBusy] = useState<number | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
+  const [targetKeyword, setTargetKeyword] = useState("");
   const [pending, startTransition] = useTransition();
+
+  const liveMarkdown = useMemo(
+    () => toMarkdown(title, current()),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [title, values],
+  );
+  const [debouncedMarkdown, setDebouncedMarkdown] = useState(liveMarkdown);
+
+  useEffect(() => {
+    const timer = setTimeout(() => setDebouncedMarkdown(liveMarkdown), 400);
+    return () => clearTimeout(timer);
+  }, [liveMarkdown]);
+
+  const readability = useMemo(() => analyzeReadability(debouncedMarkdown), [debouncedMarkdown]);
+  const seo = useMemo(
+    () => analyzeSeo(debouncedMarkdown, targetKeyword, title),
+    [debouncedMarkdown, targetKeyword, title],
+  );
+  const grade = gradeLabel(readability.gradeLevel);
+  const readingMinutes = Math.max(1, Math.round(readability.wordCount / 200));
+  const seoPassed = seo.checks.filter((c) => c.passed).length;
 
   const current = (): DocSection[] =>
     sections.map((s, i) => ({ ...s, content: values[i] ?? "" }));
@@ -109,7 +133,8 @@ export function DocEditor({
       : "rounded-control px-3 py-1.5 text-sm font-medium text-ink-secondary transition-colors hover:bg-surface-subtle hover:text-ink";
 
   return (
-    <form action={saveDraft} className="mt-6">
+    <div className="mt-6 grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_280px]">
+      <form action={saveDraft} className="min-w-0">
       <input type="hidden" name="draftId" value={draftId} />
       <input type="hidden" name="projectId" value={projectId} />
       <input
@@ -216,6 +241,95 @@ export function DocEditor({
           {notice}
         </p>
       ) : null}
-    </form>
+      </form>
+
+      <aside className="min-w-0 space-y-4 xl:sticky xl:top-6" aria-label="Writing insights">
+        <section className="rounded-card border border-line bg-surface p-4">
+          <p className="text-xs font-medium uppercase tracking-[0.12em] text-ink-muted">
+            Target keyword
+          </p>
+          <input
+            type="text"
+            value={targetKeyword}
+            onChange={(e) => setTargetKeyword(e.target.value)}
+            placeholder="e.g. content planning"
+            className="mt-2 h-10 w-full rounded-field border border-line bg-surface px-3 text-sm text-ink placeholder:text-ink-muted focus:border-brand focus:outline-none"
+          />
+        </section>
+
+        <section className="rounded-card border border-line bg-surface p-4">
+          <p className="text-xs font-medium uppercase tracking-[0.12em] text-ink-muted">
+            Word count
+          </p>
+          <p className="mt-1 text-3xl font-semibold tracking-tight text-ink">
+            {readability.wordCount.toLocaleString()}
+          </p>
+          <p className="mt-1 text-xs text-ink-muted">
+            Reading time {readingMinutes} min · {readability.sentenceCount} sentences
+          </p>
+        </section>
+
+        <section className="rounded-card border border-line bg-surface p-4">
+          <p className="text-xs font-medium uppercase tracking-[0.12em] text-ink-muted">
+            Readability
+          </p>
+          <p className="mt-1 text-3xl font-semibold tracking-tight" style={{ color: grade.color }}>
+            {readability.gradeLevel}
+          </p>
+          <p className="mt-1 text-xs font-medium" style={{ color: grade.color }}>
+            {grade.label} — Grade {readability.gradeLevel}
+          </p>
+          <ul className="mt-3 space-y-1.5 text-xs text-ink-secondary">
+            <li className="flex items-center justify-between">
+              <span>Complex sentences</span>
+              <span className="font-semibold text-ink">{readability.complexSentences.length}</span>
+            </li>
+            <li className="flex items-center justify-between">
+              <span>Passive voice</span>
+              <span className="font-semibold text-ink">{readability.passiveSentences.length}</span>
+            </li>
+            <li className="flex items-center justify-between">
+              <span>Adverbs</span>
+              <span className="font-semibold text-ink">{readability.adverbs.length}</span>
+            </li>
+          </ul>
+          {readability.complexSentences.slice(0, 2).map((sentence, index) => (
+            <p
+              key={`${index}-${sentence.slice(0, 24)}`}
+              className="mt-2 rounded-control bg-error-soft p-2 text-xs leading-5 text-error"
+            >
+              {sentence}
+            </p>
+          ))}
+        </section>
+
+        <section className="rounded-card border border-line bg-surface p-4">
+          <p className="text-xs font-medium uppercase tracking-[0.12em] text-ink-muted">
+            SEO score
+          </p>
+          <p className="mt-1 text-3xl font-semibold tracking-tight text-ink">{seo.score}</p>
+          <p className="mt-1 text-xs text-ink-muted">
+            {seoPassed} of {seo.checks.length} checks passing
+          </p>
+          <ul className="mt-3 space-y-1.5">
+            {seo.checks.map((check) => (
+              <li key={check.id} className="flex items-start gap-2 text-xs">
+                <span
+                  aria-hidden="true"
+                  className={
+                    check.passed
+                      ? "mt-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-success-soft text-[10px] font-bold text-success"
+                      : "mt-0.5 inline-flex h-4 w-4 shrink-0 items-center justify-center rounded-full bg-error-soft text-[10px] font-bold text-error"
+                  }
+                >
+                  {check.passed ? "✓" : "✕"}
+                </span>
+                <span className={check.passed ? "text-ink-secondary" : "text-ink"}>{check.label}</span>
+              </li>
+            ))}
+          </ul>
+        </section>
+      </aside>
+    </div>
   );
 }
