@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { GenerateButton } from "@/components/dashboard/generate-button";
+import { EditorAnalysis } from "@/components/editor/editor-analysis";
 import { FormError } from "@/components/form";
 import { PageHeader } from "@/components/page-header";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
@@ -89,12 +90,20 @@ export default async function EditorPage({
       ) : null}
 
       {draft ? (
-        <SectionEditor
-          draftId={(draft as ArticleDraft).id}
-          projectId={id}
-          initialTitle={(draft as ArticleDraft).title}
-          sections={parseSections((draft as ArticleDraft).content)}
-        />
+        <>
+          <SectionEditor
+            draftId={(draft as ArticleDraft).id}
+            projectId={id}
+            initialTitle={(draft as ArticleDraft).title}
+            sections={parseSections((draft as ArticleDraft).content)}
+          />
+          <EditorAnalysis
+            initialTitle={(draft as ArticleDraft).title}
+            initialContent={parseSections((draft as ArticleDraft).content)
+              .map((section) => `## ${section.heading}\n\n${section.content}`)
+              .join("\n\n")}
+          />
+        </>
       ) : outline ? (
         <div className="mt-8">
           <GenerateButton
