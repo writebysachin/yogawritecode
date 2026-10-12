@@ -32,6 +32,15 @@ const footerLinks = [
     links: [
       { label: "Blog", href: "/resources/blog" },
       { label: "FAQs", href: "/resources/faqs" },
+      { label: "Pricing", href: "/pricing" },
+    ],
+  },
+  {
+    title: "Legal",
+    links: [
+      { label: "Terms", href: "/terms" },
+      { label: "Privacy", href: "/privacy" },
+      { label: "Refund Policy", href: "/refund-policy" },
     ],
   },
 ] as const;
