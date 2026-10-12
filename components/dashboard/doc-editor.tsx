@@ -140,8 +140,8 @@ export function DocEditor({
       : "rounded-control px-3 py-1.5 text-sm font-medium text-ink-secondary transition-colors hover:bg-surface-subtle hover:text-ink";
 
   return (
-    <div className="mt-6 grid items-start gap-6 xl:grid-cols-[minmax(0,1fr)_280px]">
-      <form action={saveDraft} className="min-w-0">
+    <div className="mt-6 grid items-start gap-6 xl:grid-cols-[280px_minmax(0,1fr)]">
+      <form action={saveDraft} className="min-w-0 order-1 xl:order-2">
       <input type="hidden" name="draftId" value={draftId} />
       <input type="hidden" name="projectId" value={projectId} />
       <input
@@ -185,7 +185,7 @@ export function DocEditor({
         </div>
       </div>
 
-      <div className="mt-6 rounded-card border border-line bg-surface px-8 py-10 sm:px-12">
+      <div className="mt-6 rounded-card border border-line bg-surface px-8 py-12 sm:px-12">
         <input
           value={title}
           onChange={(e) => setTitle(e.target.value)}
@@ -195,7 +195,7 @@ export function DocEditor({
         />
 
         {sections.length > 1 ? (
-          <nav aria-label="Sections" className="mt-4 flex flex-wrap gap-2">
+          <nav aria-label="Sections" className="mt-6 flex flex-wrap gap-2">
             {sections.map((s, i) => (
               <a
                 key={`nav-${s.heading}-${i}`}
@@ -209,7 +209,7 @@ export function DocEditor({
         ) : null}
 
         {mode === "write" ? (
-          <div className="mt-6 space-y-4">
+          <div className="mt-8 space-y-6">
           {sections.map((s, i) => {
             const words = sectionWords[i] ?? 0;
             const isActive = focused === i;
@@ -219,8 +219,8 @@ export function DocEditor({
               id={`doc-section-${i}`}
               className={
                 isActive
-                  ? "scroll-mt-24 rounded-card border-2 border-brand bg-surface p-5 transition-colors"
-                  : "scroll-mt-24 rounded-card border border-line bg-surface-subtle/50 p-5 transition-colors"
+                  ? "scroll-mt-24 rounded-card border-2 border-brand bg-surface p-6 transition-colors"
+                  : "scroll-mt-24 rounded-card border border-line bg-surface-subtle/50 p-6 transition-colors"
               }
             >
               <div className="flex items-center gap-3">
@@ -278,9 +278,9 @@ export function DocEditor({
           })}
           </div>
         ) : (
-          <article className="mt-6 space-y-4">
+          <article className="mt-8 space-y-6">
             {current().map((s, i) => (
-              <section key={s.heading + i} id={`doc-section-${i}`} className="scroll-mt-24 rounded-card border border-line bg-surface-subtle/50 p-5">
+              <section key={s.heading + i} id={`doc-section-${i}`} className="scroll-mt-24 rounded-card border border-line bg-surface-subtle/50 p-6">
                 <div className="flex items-center gap-3">
                   <span className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-control bg-brand-soft text-xs font-bold text-brand">
                     {String(i + 1).padStart(2, "0")}
@@ -305,7 +305,7 @@ export function DocEditor({
       ) : null}
       </form>
 
-      <aside className="min-w-0 space-y-4 xl:sticky xl:top-6" aria-label="Writing insights">
+      <aside className="min-w-0 order-2 space-y-4 xl:order-1 xl:sticky xl:top-6" aria-label="Writing insights">
         <section className="rounded-card border border-line bg-surface p-4">
           <p className="text-xs font-medium uppercase tracking-[0.12em] text-ink-muted">
             Target keyword
