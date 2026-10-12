@@ -36,6 +36,8 @@ export default async function SeoPage() {
     "id, title, reason, description, opportunity_score, search_intent, funnel_stage, difficulty, target_keywords, keyword_gaps, projects ( id, name )";
   const legacySelect =
     "id, title, reason, description, opportunity_score, search_intent, funnel_stage, difficulty, keyword_gaps, projects ( id, name )";
+  const minimalSelect =
+    "id, title, reason, description, opportunity_score, search_intent, funnel_stage, difficulty, projects ( id, name )";
 
   let { data, error } = await supabase
     .from("content_opportunities")
@@ -43,7 +45,8 @@ export default async function SeoPage() {
     .order("opportunity_score", { ascending: false })
     .limit(25);
 
-  // Fallback for databases where the target_keywords migration hasn't run yet.
+  // Fallbacks for prod DBs where the keyword_gaps / target_keywords migrations
+  // haven't run yet. Each older schema drops one more column.
   if (!data && error) {
     const retry = await supabase
       .from("content_opportunities")
@@ -53,6 +56,20 @@ export default async function SeoPage() {
     if (!retry.error) {
       data = (retry.data ?? []).map((row) => ({ ...row, target_keywords: [] }));
       error = null;
+    } else {
+      const minimal = await supabase
+        .from("content_opportunities")
+        .select(minimalSelect)
+        .order("opportunity_score", { ascending: false })
+        .limit(25);
+      if (!minimal.error) {
+        data = (minimal.data ?? []).map((row) => ({
+          ...row,
+          target_keywords: [],
+          keyword_gaps: [],
+        }));
+        error = null;
+      }
     }
   }
 
