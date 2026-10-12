@@ -95,30 +95,27 @@ export default async function ContentPage({
           )}
         </section>
       ) : (
-        <div className="mt-8 grid gap-10 lg:grid-cols-[220px_minmax(0,1fr)]">
-          <aside className="min-w-0">
-            <p className="text-xs font-medium uppercase tracking-[0.14em] text-ink-muted">Drafts</p>
-            <ul className="mt-3 space-y-1">
-              {drafts.map((d) => (
-                <li key={d.id}>
-                  <Link
-                    href={`/dashboard/content?draft=${d.id}`}
-                    className={
-                      selected?.id === d.id
-                        ? "block rounded-control bg-brand-soft px-3 py-2 text-sm font-medium text-brand"
-                        : "block rounded-control px-3 py-2 text-sm text-ink-secondary transition-colors hover:bg-surface-subtle hover:text-ink"
-                    }
-                  >
-                    <span className="block truncate">{d.title}</span>
-                    <span className="block truncate text-xs opacity-70">
-                      {d.projects?.name ?? "Unknown project"}
-                    </span>
-                  </Link>
-                </li>
-              ))}
-            </ul>
+        <div className="mt-8 min-w-0">
+          <div className="flex flex-wrap items-center gap-2">
+            <p className="mr-1 text-xs font-medium uppercase tracking-[0.14em] text-ink-muted">
+              Drafts
+            </p>
+            {drafts.map((d) => (
+              <Link
+                key={d.id}
+                href={`/dashboard/content?draft=${d.id}`}
+                title={d.title}
+                className={
+                  selected?.id === d.id
+                    ? "max-w-55 truncate rounded-control bg-brand-soft px-3 py-2 text-sm font-medium text-brand"
+                    : "max-w-55 truncate rounded-control border border-line px-3 py-2 text-sm text-ink-secondary transition-colors hover:border-brand hover:text-brand"
+                }
+              >
+                {d.title}
+              </Link>
+            ))}
             {selected ? (
-              <form action={deleteDraft} className="mt-4">
+              <form action={deleteDraft} className="ml-auto">
                 <input type="hidden" name="draftId" value={selected.id} />
                 <input type="hidden" name="projectId" value={selected.project_id} />
                 <button
@@ -129,9 +126,9 @@ export default async function ContentPage({
                 </button>
               </form>
             ) : null}
-          </aside>
+          </div>
 
-          <div className="min-w-0">
+          <div className="mt-6 min-w-0">
             {selected ? (
               <DocEditor
                 draftId={selected.id}
