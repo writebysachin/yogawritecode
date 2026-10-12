@@ -37,21 +37,26 @@ export default async function SeoPage() {
   const legacySelect =
     "id, title, reason, description, opportunity_score, search_intent, funnel_stage, difficulty, keyword_gaps, projects ( id, name )";
 
-  let { data } = await supabase
+  let { data, error } = await supabase
     .from("content_opportunities")
     .select(fullSelect)
     .order("opportunity_score", { ascending: false })
     .limit(25);
 
   // Fallback for databases where the target_keywords migration hasn't run yet.
-  if (!data) {
+  if (!data && error) {
     const retry = await supabase
       .from("content_opportunities")
       .select(legacySelect)
       .order("opportunity_score", { ascending: false })
       .limit(25);
-    data = (retry.data ?? []).map((row) => ({ ...row, target_keywords: [] }));
+    if (!retry.error) {
+      data = (retry.data ?? []).map((row) => ({ ...row, target_keywords: [] }));
+      error = null;
+    }
   }
+
+  const loadError = error ? (error as { message?: string }).message ?? "unknown error" : null;
 
   const rows = (data ?? []).map((row) => ({
     ...row,
@@ -65,7 +70,11 @@ export default async function SeoPage() {
         description="Keywords, SERP competition, difficulty, and score — one row per opportunity."
       />
 
-      {rows.length === 0 ? (
+      {loadError ? (
+        <div className="mt-8 rounded-card border border-error bg-surface px-5 py-4 text-sm text-ink">
+          Could not load opportunities: {loadError}. Check Supabase migrations and RLS.
+        </div>
+      ) : rows.length === 0 ? (
         <EmptyState
           title="Nothing ranked yet"
           message="Run a website analysis and your opportunities will be ranked here."
