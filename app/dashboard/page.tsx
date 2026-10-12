@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { DeleteProjectButton } from "@/components/dashboard/delete-project-button";
+import { Greeting } from "@/components/dashboard/greeting";
 import { SignupTracker } from "@/components/analytics/signup-tracker";
 import { EmptyState } from "@/components/empty-state";
 import { PageHeader } from "@/components/page-header";
@@ -90,8 +91,6 @@ export default async function OverviewPage({
   const firstName = cap(
     displayName === "Your account" ? "there" : displayName.split(/\s+/)[0] || "there",
   );
-  const hour = new Date().getHours();
-  const greeting = hour < 12 ? "Good morning" : hour < 18 ? "Good afternoon" : "Good evening";
 
   const now = new Date().getTime();
   const weekAgo = new Date(now - 7 * DAY).toISOString();
@@ -169,9 +168,7 @@ export default async function OverviewPage({
       <PlanBanner planStatus={planStatus} />
       <header className="flex flex-wrap items-end justify-between gap-4">
         <div className="min-w-0">
-          <h1 className="font-sans text-3xl font-semibold tracking-tight text-ink">
-            {greeting}, {firstName}
-          </h1>
+          <Greeting name={firstName} />
           <p className="mt-2 truncate text-sm text-ink-secondary">
             Here&apos;s your content intelligence{focusProject ? ` for ${focusProject.name}` : ""}.
           </p>
