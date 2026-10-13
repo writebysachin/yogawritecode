@@ -130,14 +130,15 @@ export async function draftSection(
     mode: "draft" as const,
   };
 
-  const reserve = await reserveCredit(supabase, user);
+  const reserve = await reserveCredit(supabase, user, "section-draft");
   if (!reserve.ok) return { ok: false, error: OUT_OF_CREDITS_SHORT };
 
   try {
     const text = await generateSection(input);
+    revalidatePath("/dashboard");
     return { ok: true, text };
   } catch {
-    if (reserve.charged) await refundCredit(supabase, user.id);
+    if (reserve.charged) await refundCredit(supabase, user.id, "section-draft");
     return { ok: false, error: "Couldn't draft this section right now. Try again." };
   }
 }
@@ -157,14 +158,15 @@ export async function improveSection(
     mode: "improve" as const,
   };
 
-  const reserve = await reserveCredit(supabase, user);
+  const reserve = await reserveCredit(supabase, user, "section-improve");
   if (!reserve.ok) return { ok: false, error: OUT_OF_CREDITS_SHORT };
 
   try {
     const text = await generateSection(input);
+    revalidatePath("/dashboard");
     return { ok: true, text };
   } catch {
-    if (reserve.charged) await refundCredit(supabase, user.id);
+    if (reserve.charged) await refundCredit(supabase, user.id, "section-improve");
     return { ok: false, error: "Couldn't rewrite this section right now. Try again." };
   }
 }

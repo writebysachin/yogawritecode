@@ -11,7 +11,12 @@ import type {
   WebsiteAnalysisResult,
 } from "@/lib/ai/schemas";
 import type { User } from "@supabase/supabase-js";
-import { OUT_OF_CREDITS_MESSAGE, refundCredit, reserveCredit } from "@/lib/credits";
+import {
+  OUT_OF_CREDITS_MESSAGE,
+  refundCredit,
+  reserveCredit,
+  type CreditStep,
+} from "@/lib/credits";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { fetchKeywordGaps } from "@/lib/tavily";
 
@@ -61,8 +66,9 @@ async function takeCredit(
   supabase: ServerClient,
   user: User,
   projectId: string,
+  step: CreditStep,
 ) {
-  const reserve = await reserveCredit(supabase, user);
+  const reserve = await reserveCredit(supabase, user, step);
   if (!reserve.ok) fail(projectId, OUT_OF_CREDITS_MESSAGE);
   return reserve.charged;
 }
@@ -135,7 +141,7 @@ export async function analyzeWebsite(formData: FormData): Promise<void> {
   }
 
   let result: WebsiteAnalysisResult;
-  const charged = await takeCredit(supabase, user, projectId);
+  const charged = await takeCredit(supabase, user, projectId, "analysis");
   try {
     // Use the same bounded extractor as the mock provider so the prompt is
     // grounded in the page title, description, headings, and key terms.
@@ -150,7 +156,7 @@ export async function analyzeWebsite(formData: FormData): Promise<void> {
     });
   } catch (error) {
     console.error("[analyzeWebsite] AI generation failed", error);
-    if (charged) await refundCredit(supabase, user.id);
+    if (charged) await refundCredit(supabase, user.id, "analysis");
     fail(projectId, messageFrom(error, "We couldn't analyze this website right now. Try again."));
   }
 
@@ -172,7 +178,7 @@ export async function analyzeWebsite(formData: FormData): Promise<void> {
 
   if (analysisError || !analysis) {
     console.error("[analyzeWebsite] analysis insert failed", analysisError);
-    if (charged) await refundCredit(supabase, user.id);
+    if (charged) await refundCredit(supabase, user.id, "analysis");
     fail(projectId, `Could not save the analysis: ${analysisError?.message ?? "unknown database error"}`);
   }
 
@@ -210,7 +216,7 @@ export async function analyzeWebsite(formData: FormData): Promise<void> {
       if (retryError) {
         await supabase.from("website_analyses").delete().eq("id", analysis.id);
         console.error("[analyzeWebsite] opportunity insert failed", retryError);
-        if (charged) await refundCredit(supabase, user.id);
+        if (charged) await refundCredit(supabase, user.id, "analysis");
         fail(projectId, `Could not save content opportunities: ${retryError.message}`);
       }
     } else {
@@ -218,7 +224,7 @@ export async function analyzeWebsite(formData: FormData): Promise<void> {
       // workflow output could not be saved.
       await supabase.from("website_analyses").delete().eq("id", analysis.id);
       console.error("[analyzeWebsite] opportunity insert failed", opportunityError);
-      if (charged) await refundCredit(supabase, user.id);
+      if (charged) await refundCredit(supabase, user.id, "analysis");
       fail(projectId, `Could not save content opportunities: ${opportunityError.message}`);
     }
   }
@@ -246,14 +252,14 @@ export async function generateCluster(formData: FormData): Promise<void> {
   }
 
   let result: TopicClusterResult;
-  const charged = await takeCredit(supabase, user, projectId);
+  const charged = await takeCredit(supabase, user, projectId, "cluster");
   try {
     result = await getAIProvider().generateCluster(
       await buildContext(supabase, project, opportunity),
     );
   } catch (error) {
     console.error("[generateCluster] AI generation failed", error);
-    if (charged) await refundCredit(supabase, user.id);
+    if (charged) await refundCredit(supabase, user.id, "cluster");
     fail(projectId, messageFrom(error, "We couldn't generate the topic cluster right now. Try again."));
   }
 
@@ -272,7 +278,7 @@ export async function generateCluster(formData: FormData): Promise<void> {
 
   if (insertError) {
     console.error("[generateCluster] database insert failed", insertError);
-    if (charged) await refundCredit(supabase, user.id);
+    if (charged) await refundCredit(supabase, user.id, "cluster");
     fail(projectId, `Could not save the topic cluster: ${insertError.message}`);
   }
 
@@ -299,14 +305,14 @@ export async function generateBrief(formData: FormData): Promise<void> {
   }
 
   let result: SeoBriefResult;
-  const charged = await takeCredit(supabase, user, projectId);
+  const charged = await takeCredit(supabase, user, projectId, "brief");
   try {
     result = await getAIProvider().generateBrief(
       await buildContext(supabase, project, opportunity),
     );
   } catch (error) {
     console.error("[generateBrief] AI generation failed", error);
-    if (charged) await refundCredit(supabase, user.id);
+    if (charged) await refundCredit(supabase, user.id, "brief");
     fail(projectId, messageFrom(error, "We couldn't generate the SEO brief right now. Try again."));
   }
 
@@ -324,7 +330,7 @@ export async function generateBrief(formData: FormData): Promise<void> {
 
   if (insertError) {
     console.error("[generateBrief] database insert failed", insertError);
-    if (charged) await refundCredit(supabase, user.id);
+    if (charged) await refundCredit(supabase, user.id, "brief");
     fail(projectId, `Could not save the SEO brief: ${insertError.message}`);
   }
 
@@ -366,7 +372,7 @@ export async function generateOutline(formData: FormData): Promise<void> {
   const briefContext = `\nSEO brief keyword: ${brief.primary_keyword}. Suggested headings: ${(brief.suggested_headings as string[] | null)?.join(", ") ?? "none"}. Questions: ${(brief.questions_to_answer as string[] | null)?.join(", ") ?? "none"}.`;
 
   let result: ArticleOutlineResult;
-  const charged = await takeCredit(supabase, user, projectId);
+  const charged = await takeCredit(supabase, user, projectId, "outline");
   try {
     result = await getAIProvider().generateOutline({
       ...context,
@@ -374,7 +380,7 @@ export async function generateOutline(formData: FormData): Promise<void> {
     });
   } catch (error) {
     console.error("[generateOutline] AI generation failed", error);
-    if (charged) await refundCredit(supabase, user.id);
+    if (charged) await refundCredit(supabase, user.id, "outline");
     fail(projectId, messageFrom(error, "We couldn't generate the article outline right now. Try again."));
   }
 
@@ -390,7 +396,7 @@ export async function generateOutline(formData: FormData): Promise<void> {
 
   if (insertError) {
     console.error("[generateOutline] database insert failed", insertError);
-    if (charged) await refundCredit(supabase, user.id);
+    if (charged) await refundCredit(supabase, user.id, "outline");
     fail(projectId, `Could not save the article outline: ${insertError.message}`);
   }
 

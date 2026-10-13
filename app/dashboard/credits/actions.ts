@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { CARD_BONUS_CREDITS } from "@/lib/plan";
+import { logClaim } from "@/lib/credits";
 
 export async function claimCardBonus(): Promise<{ ok: boolean; message: string }> {
   const supabase = await createSupabaseServerClient();
@@ -33,6 +34,8 @@ export async function claimCardBonus(): Promise<{ ok: boolean; message: string }
     .eq("id", userData.user.id);
 
   if (writeError) return { ok: false, message: "Could not claim credits. Try again." };
+
+  await logClaim(supabase, userData.user.id, CARD_BONUS_CREDITS, next);
 
   revalidatePath("/dashboard");
   revalidatePath("/dashboard/settings");
