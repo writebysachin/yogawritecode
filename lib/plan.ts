@@ -1,9 +1,15 @@
 import type { User } from "@supabase/supabase-js";
 
-export type Plan = "free" | "pro";
+export type Plan = "free" | "starter" | "pro" | "scale";
 
 export const FREE_PROJECT_LIMIT = 2;
 export const TRIAL_DAYS = 7;
+
+// Credit allocations — competitors gate by seats/documents; we gate by outcome.
+export const FREE_CREDITS = 50;
+export const STARTER_CREDITS = 200;
+export const CARD_BONUS_CREDITS = 100;
+export const REFERRAL_FREE_MONTHS_CAP = 3;
 
 /** Subscription statuses that grant Pro access. Written by the billing webhooks. */
 const PRO_STATUSES = ["active", "trialing"] as const;

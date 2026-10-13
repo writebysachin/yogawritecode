@@ -33,7 +33,7 @@ export function PlanBanner({ planStatus }: { planStatus: PlanStatus }) {
         <div>
           <p className="text-sm font-semibold text-ink">Free plan</p>
           <p className="mt-0.5 text-xs text-ink-secondary">
-            {planStatus.projectLimit} projects max · No export · Upgrade for unlimited access.
+            50 credits · No card required · Starter $9 / Pro $19 / Scale $40 for more.
           </p>
         </div>
         <Link

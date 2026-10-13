@@ -4,7 +4,8 @@ import { PricingPlans } from "@/components/pricing-plans";
 
 export const metadata: Metadata = {
   title: "Pricing",
-  description: "Simple, transparent pricing for serious content teams. Cancel anytime.",
+  description:
+    "Start free with 50 credits, no card required. Starter $9, Pro $19, Scale $40. Cancel anytime.",
   alternates: { canonical: "/pricing" },
 };
 
@@ -20,10 +21,12 @@ export default function PricingPage() {
             Pricing
           </h1>
           <p className="mt-4 max-w-xl text-lg text-ink-secondary">
-            Simple, transparent pricing for serious content teams. Cancel anytime.
+            Start free. Upgrade when your pipeline pays for itself. Cancel anytime.
           </p>
           <p className="mt-3 max-w-xl text-sm text-ink-muted">
-            Start with a 7-day free trial of Pro. No credit card required to begin. Free plan includes 2 projects and core features.
+            Free includes 50 credits with no credit card. Paid trials run 7 days with no charge.
+            Referrals earn 1 free month each (capped at 3 per account); adding a card adds +100
+            bonus credits.
           </p>
 
           <div className="mt-10">

@@ -126,10 +126,17 @@ const jsonLd = {
       offers: [
         {
           "@type": "Offer",
-          name: "Starter",
+          name: "Free",
           price: "0",
           priceCurrency: "USD",
-          description: "Free forever. 50 AI credits, 1 active project, full 5-step workflow.",
+          description: "Free forever. 50 AI credits, no card required, 1 active project.",
+        },
+        {
+          "@type": "Offer",
+          name: "Starter",
+          price: "9",
+          priceCurrency: "USD",
+          description: "200 AI credits per month, 3 projects, Markdown and PDF exports.",
         },
         {
           "@type": "Offer",
@@ -137,6 +144,13 @@ const jsonLd = {
           price: "19",
           priceCurrency: "USD",
           description: "Unlimited AI credits and projects, exports, and priority processing. Includes a 7-day free trial.",
+        },
+        {
+          "@type": "Offer",
+          name: "Scale",
+          price: "40",
+          priceCurrency: "USD",
+          description: "Everything in Pro plus client-ready exports, bulk briefs, and dedicated support.",
         },
       ],
     },

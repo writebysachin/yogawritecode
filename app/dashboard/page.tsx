@@ -2,6 +2,7 @@ import type { Metadata } from "next";
 import { ArrowRight } from "lucide-react";
 import Link from "next/link";
 import { DeleteProjectButton } from "@/components/dashboard/delete-project-button";
+import { GetCredits } from "@/components/dashboard/get-credits";
 import { Greeting } from "@/components/dashboard/greeting";
 import { SignupTracker } from "@/components/analytics/signup-tracker";
 import { EmptyState } from "@/components/empty-state";
@@ -81,7 +82,7 @@ export default async function OverviewPage({
   const { data: profile } = userData.user
     ? await supabase
         .from("profiles")
-        .select("full_name, subscription_status")
+        .select("full_name, subscription_status, ai_credits_balance, card_bonus_claimed")
         .eq("id", userData.user.id)
         .maybeSingle()
     : { data: null };
@@ -131,7 +132,11 @@ export default async function OverviewPage({
     ]);
 
   const states = (projectsRes.data ?? []) as ProjState[];
-  const profileRow = profile as { subscription_status?: string | null } | null;
+  const profileRow = profile as {
+    subscription_status?: string | null;
+    ai_credits_balance?: number | null;
+    card_bonus_claimed?: boolean | null;
+  } | null;
   const planStatus = getPlanStatus(userData.user, states.length, profileRow?.subscription_status);
   const totalOpps = oppsRes.count ?? 0;
   const oppsDelta = (oppsWeek.count ?? 0) - (oppsPrev.count ?? 0);
@@ -173,12 +178,18 @@ export default async function OverviewPage({
             Here&apos;s your content intelligence{focusProject ? ` for ${focusProject.name}` : ""}.
           </p>
         </div>
-        <Link
-          href="/dashboard/projects/new"
-          className="inline-flex h-10 shrink-0 items-center rounded-field bg-brand px-4 text-sm font-medium text-white transition-colors hover:bg-brand-hover"
-        >
-          New project
-        </Link>
+        <div className="flex shrink-0 items-center gap-3">
+          <Link
+            href="/dashboard/projects/new"
+            className="inline-flex h-10 shrink-0 items-center rounded-field bg-brand px-4 text-sm font-medium text-white transition-colors hover:bg-brand-hover"
+          >
+            New project
+          </Link>
+          <GetCredits
+            credits={profileRow?.ai_credits_balance ?? 50}
+            cardClaimed={profileRow?.card_bonus_claimed ?? false}
+          />
+        </div>
       </header>
 
       <div className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-4">

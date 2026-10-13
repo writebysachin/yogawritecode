@@ -2,22 +2,36 @@
 
 import { useState } from "react";
 import { ArrowRight, Check, X } from "lucide-react";
-import { buildDodoPaymentLink } from "@/lib/dodo";
+import { buildDodoPlanLink } from "@/lib/dodo";
 
 type BillingCycle = "monthly" | "yearly";
 
+const FREE_FEATURES = [
+  { label: "50 AI credits, no card required", included: true },
+  { label: "1 active project", included: true },
+  { label: "Full 5-step workflow", included: true },
+  { label: "View-only exports", included: false },
+] as const;
+
 const STARTER_FEATURES = [
-  { label: "50 Free AI Credits", included: true },
-  { label: "1 Active Project", included: true },
-  { label: "Full 5 Step Workflow", included: true },
-  { label: "View only exports", included: false },
+  { label: "200 AI credits / month", included: true },
+  { label: "3 active projects", included: true },
+  { label: "Export to Markdown + PDF", included: true },
+  { label: "Priority processing", included: false },
 ] as const;
 
 const PRO_FEATURES = [
-  { label: "Unlimited AI Credits", included: true },
-  { label: "Unlimited Projects", included: true },
+  { label: "Unlimited AI credits", included: true },
+  { label: "Unlimited projects", included: true },
   { label: "Export to Markdown, PDF, Word", included: true },
-  { label: "Priority AI Processing", included: true },
+  { label: "Priority AI processing", included: true },
+] as const;
+
+const SCALE_FEATURES = [
+  { label: "Everything in Pro", included: true },
+  { label: "Client-ready exports", included: true },
+  { label: "Bulk briefs + outlines", included: true },
+  { label: "Dedicated support", included: true },
 ] as const;
 
 function FeatureList({ features }: { features: ReadonlyArray<{ label: string; included: boolean }> }) {
@@ -52,8 +66,12 @@ export function PricingPlans({
 }) {
   const [cycle, setCycle] = useState<BillingCycle>("monthly");
 
-  const proPrice = cycle === "yearly" ? "$189" : "$19";
-  const proUnit = cycle === "yearly" ? "/ year" : "/ month";
+  const prices = {
+    starter: cycle === "yearly" ? "$86" : "$9",
+    pro: cycle === "yearly" ? "$182" : "$19",
+    scale: cycle === "yearly" ? "$384" : "$40",
+  };
+  const unit = cycle === "yearly" ? "/ year" : "/ month";
 
   return (
     <div>
@@ -77,24 +95,22 @@ export function PricingPlans({
           >
             Yearly
             <span className="rounded-full bg-success-soft px-2 py-0.5 text-[11px] font-semibold text-success">
-              Save 17%
+              Save 20%
             </span>
           </button>
         </div>
       </div>
 
-      <div className="mt-10 grid gap-6 md:grid-cols-2">
+      <div className="mt-10 grid gap-6 md:grid-cols-2 xl:grid-cols-4">
         <section className="flex flex-col rounded-card border border-line bg-surface p-7">
-          <p className="text-xs font-medium uppercase tracking-[0.14em] text-ink-muted">Starter</p>
-          <h2 className="mt-2 font-sans text-2xl font-semibold tracking-tight text-ink">Free</h2>
+          <p className="text-xs font-medium uppercase tracking-[0.14em] text-ink-muted">Free</p>
+          <h2 className="mt-2 font-sans text-2xl font-semibold tracking-tight text-ink">Try free</h2>
           <p className="mt-5 flex items-baseline gap-2">
             <span className="font-sans text-4xl font-semibold tracking-tight text-ink">$0</span>
             <span className="text-sm text-ink-muted">/ forever</span>
           </p>
-          <p className="mt-6 text-xs font-medium uppercase tracking-[0.14em] text-ink-muted">
-            Everything to get started
-          </p>
-          <FeatureList features={STARTER_FEATURES} />
+          <p className="mt-1 text-xs font-medium text-success">No credit card required</p>
+          <FeatureList features={FREE_FEATURES} />
           <div className="mt-8 pt-2">
             <button
               type="button"
@@ -103,6 +119,30 @@ export function PricingPlans({
             >
               Current Plan
             </button>
+          </div>
+        </section>
+
+        <section className="flex flex-col rounded-card border border-line bg-surface p-7">
+          <p className="text-xs font-medium uppercase tracking-[0.14em] text-ink-muted">Starter</p>
+          <h2 className="mt-2 font-sans text-2xl font-semibold tracking-tight text-ink">
+            Solo bloggers
+          </h2>
+          <p className="mt-5 flex items-baseline gap-2">
+            <span className="font-sans text-4xl font-semibold tracking-tight text-ink">
+              {prices.starter}
+            </span>
+            <span className="text-sm text-ink-muted">{unit}</span>
+          </p>
+          <p className="mt-1 text-xs font-medium text-success">7-day free trial, no card</p>
+          <FeatureList features={STARTER_FEATURES} />
+          <div className="mt-8 pt-2">
+            <a
+              href={buildDodoPlanLink("starter", email, userId)}
+              className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-field border border-line px-4 text-sm font-medium text-ink transition-colors hover:border-ink"
+            >
+              Start Starter trial
+              <ArrowRight size={16} />
+            </a>
           </div>
         </section>
 
@@ -115,12 +155,14 @@ export function PricingPlans({
             Scale your strategy
           </h2>
           <p className="mt-5 flex items-baseline gap-2">
-            <span className="font-sans text-4xl font-semibold tracking-tight text-ink">{proPrice}</span>
-            <span className="text-sm text-ink-muted">{proUnit}</span>
+            <span className="font-sans text-4xl font-semibold tracking-tight text-ink">
+              {prices.pro}
+            </span>
+            <span className="text-sm text-ink-muted">{unit}</span>
           </p>
           <p className="mt-1 text-xs font-medium text-success">Includes a 7-day free trial</p>
           <p className="mt-5 text-xs font-medium uppercase tracking-[0.14em] text-ink-muted">
-            Everything in starter, plus
+            Everything in Starter, plus
           </p>
           <FeatureList features={PRO_FEATURES} />
           <div className="mt-8 pt-2">
@@ -132,8 +174,9 @@ export function PricingPlans({
               >
                 Current Plan
               </button>
-            ) : (<a
-                href={buildDodoPaymentLink(email, userId)}
+            ) : (
+              <a
+                href={buildDodoPlanLink("pro", email, userId)}
                 className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-field bg-brand px-4 text-sm font-medium text-white transition-colors hover:bg-brand-hover"
               >
                 Start 7-day free trial
@@ -142,7 +185,36 @@ export function PricingPlans({
             )}
           </div>
         </section>
+
+        <section className="flex flex-col rounded-card border border-line bg-surface p-7">
+          <p className="text-xs font-medium uppercase tracking-[0.14em] text-ink-muted">Scale</p>
+          <h2 className="mt-2 font-sans text-2xl font-semibold tracking-tight text-ink">
+            Agencies + teams
+          </h2>
+          <p className="mt-5 flex items-baseline gap-2">
+            <span className="font-sans text-4xl font-semibold tracking-tight text-ink">
+              {prices.scale}
+            </span>
+            <span className="text-sm text-ink-muted">{unit}</span>
+          </p>
+          <p className="mt-1 text-xs font-medium text-success">7-day free trial, no card</p>
+          <FeatureList features={SCALE_FEATURES} />
+          <div className="mt-8 pt-2">
+            <a
+              href={buildDodoPlanLink("scale", email, userId)}
+              className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-field border border-line px-4 text-sm font-medium text-ink transition-colors hover:border-ink"
+            >
+              Start Scale trial
+              <ArrowRight size={16} />
+            </a>
+          </div>
+        </section>
       </div>
+
+      <p className="mx-auto mt-8 max-w-2xl text-center text-xs leading-5 text-ink-muted">
+        Refer a founder: you both get 1 free month, capped at 3 free months per account. Add a
+        card anytime for +100 bonus credits — trials never charge without confirmation.
+      </p>
     </div>
   );
 }
