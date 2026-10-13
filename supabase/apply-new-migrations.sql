@@ -1,5 +1,29 @@
 -- Yoga Write Code: new billing + credits + Google migrations (paste whole file, Run)
 
+-- PART 0: older migrations missing from this project (run FIRST)
+
+-- ===================================================================
+-- supabase/migrations/20261006000000_opportunity_keyword_gaps.sql
+-- ===================================================================
+alter table public.content_opportunities
+  add column if not exists keyword_gaps jsonb not null default '[]'::jsonb;
+
+-- ===================================================================
+-- supabase/migrations/20261006010000_profiles_dodo_columns.sql
+-- ===================================================================
+alter table public.profiles
+  add column if not exists dodo_customer_id text,
+  add column if not exists dodo_subscription_id text,
+  add column if not exists subscription_status text not null default 'free';
+
+-- ===================================================================
+-- supabase/migrations/20261010000000_opportunity_target_keywords.sql
+-- ===================================================================
+-- Store the 3-5 specific SERP keywords generated per content opportunity.
+-- Additive only: safe for existing projects, old rows default to [].
+alter table public.content_opportunities
+  add column if not exists target_keywords jsonb not null default '[]'::jsonb;
+
 -- ===================================================================
 -- supabase/migrations/20261013000000_profiles_credits_referrals.sql
 -- ===================================================================
