@@ -10,9 +10,6 @@ export const metadata: Metadata = {
 };
 
 export default function PricingPage() {
-  const monthlyPriceId = process.env.NEXT_PUBLIC_PADDLE_PRICE_ID_MONTHLY ?? "";
-  const yearlyPriceId = process.env.NEXT_PUBLIC_PADDLE_PRICE_ID_YEARLY ?? "";
-
   return (
     <>
       <main className="bg-canvas">
@@ -30,7 +27,7 @@ export default function PricingPage() {
           </p>
 
           <div className="mt-10">
-            <PricingPlans monthlyPriceId={monthlyPriceId} yearlyPriceId={yearlyPriceId} isPro={false} />
+            <PricingPlans isPro={false} />
           </div>
 
           <p className="mt-8 text-xs text-ink-muted">

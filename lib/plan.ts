@@ -28,8 +28,8 @@ export type PlanStatus = {
 /**
  * Single source of truth for the user's plan.
  *
- * Pro access comes from `profiles.subscription_status`, which the Dodo and
- * Paddle webhooks set to "active" after payment. Never read plan state from
+ * Pro access comes from `profiles.subscription_status`, which the Dodo
+ * webhook sets to "active" after payment. Never read plan state from
  * `user_metadata` — nothing writes it there, so paid users would look free.
  */
 export function getPlanStatus(

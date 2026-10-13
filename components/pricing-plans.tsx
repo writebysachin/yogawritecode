@@ -60,8 +60,6 @@ export function PricingPlans({
   highlightPlan,
   hideFree,
 }: {
-  monthlyPriceId?: string;
-  yearlyPriceId?: string;
   isPro: boolean;
   email?: string;
   userId?: string;

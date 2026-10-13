@@ -63,10 +63,6 @@ export default async function PricingPage({
   const spentWeek = spendRows.reduce((n, r) => n - Math.min(0, r.delta), 0);
   const recent = ((recentRes.data ?? []) as LedgerRow[]).filter((r) => typeof r.delta === "number");
 
-  // Price IDs are server-only values passed to the client toggle as props.
-  const monthlyPriceId = process.env.NEXT_PUBLIC_PADDLE_PRICE_ID_MONTHLY ?? "";
-  const yearlyPriceId = process.env.NEXT_PUBLIC_PADDLE_PRICE_ID_YEARLY ?? "";
-
   return (
     <div className="min-w-0">
       <PageHeader
@@ -142,8 +138,6 @@ export default async function PricingPage({
 
       <div className="mt-10">
         <PricingPlans
-          monthlyPriceId={monthlyPriceId}
-          yearlyPriceId={yearlyPriceId}
           isPro={isPro}
           email={userData.user?.email ?? undefined}
           userId={userData.user?.id ?? undefined}
