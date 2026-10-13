@@ -57,14 +57,21 @@ export function PricingPlans({
   isPro,
   email,
   userId,
+  highlightPlan,
 }: {
   monthlyPriceId?: string;
   yearlyPriceId?: string;
   isPro: boolean;
   email?: string;
   userId?: string;
+  highlightPlan?: string;
 }) {
   const [cycle, setCycle] = useState<BillingCycle>("monthly");
+
+  // Marketing context (no session) must never jump straight to checkout:
+  // route through signup so the webhook can match the payment to an account.
+  const authed = Boolean(email ?? userId);
+  const signupHref = (plan: string) => `/signup?plan=${plan}&cycle=${cycle}`;
 
   const prices = {
     starter: cycle === "yearly" ? "$86" : "$9",
@@ -72,6 +79,8 @@ export function PricingPlans({
     scale: cycle === "yearly" ? "$384" : "$40",
   };
   const unit = cycle === "yearly" ? "/ year" : "/ month";
+  const ring = (plan: string) =>
+    highlightPlan === plan ? " ring-2 ring-brand ring-offset-2" : "";
 
   return (
     <div>
@@ -112,17 +121,27 @@ export function PricingPlans({
           <p className="mt-1 text-xs font-medium text-success">No credit card required</p>
           <FeatureList features={FREE_FEATURES} />
           <div className="mt-8 pt-2">
-            <button
-              type="button"
-              disabled
-              className="inline-flex h-11 w-full cursor-default items-center justify-center rounded-field border border-line bg-surface text-sm font-medium text-ink-muted"
-            >
-              Current Plan
-            </button>
+            {authed ? (
+              <button
+                type="button"
+                disabled
+                className="inline-flex h-11 w-full cursor-default items-center justify-center rounded-field border border-line bg-surface text-sm font-medium text-ink-muted"
+              >
+                Current Plan
+              </button>
+            ) : (
+              <a
+                href="/signup"
+                className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-field bg-ink px-4 text-sm font-medium text-white transition-colors hover:bg-gray-800"
+              >
+                Start for free
+                <ArrowRight size={16} />
+              </a>
+            )}
           </div>
         </section>
 
-        <section className="flex flex-col rounded-card border border-line bg-surface p-7">
+        <section className={`flex flex-col rounded-card border border-line bg-surface p-7${ring("starter")}`}>
           <p className="text-xs font-medium uppercase tracking-[0.14em] text-ink-muted">Starter</p>
           <h2 className="mt-2 font-sans text-2xl font-semibold tracking-tight text-ink">
             Solo bloggers
@@ -136,17 +155,27 @@ export function PricingPlans({
           <p className="mt-1 text-xs font-medium text-success">7-day free trial, no card</p>
           <FeatureList features={STARTER_FEATURES} />
           <div className="mt-8 pt-2">
-            <a
-              href={buildDodoPlanLink("starter", email, userId)}
-              className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-field border border-line px-4 text-sm font-medium text-ink transition-colors hover:border-ink"
-            >
-              Start Starter trial
-              <ArrowRight size={16} />
-            </a>
+            {authed ? (
+              <a
+                href={buildDodoPlanLink("starter", email, userId)}
+                className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-field border border-line px-4 text-sm font-medium text-ink transition-colors hover:border-ink"
+              >
+                Start Starter trial
+                <ArrowRight size={16} />
+              </a>
+            ) : (
+              <a
+                href={signupHref("starter")}
+                className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-field border border-line px-4 text-sm font-medium text-ink transition-colors hover:border-ink"
+              >
+                Start Starter trial
+                <ArrowRight size={16} />
+              </a>
+            )}
           </div>
         </section>
 
-        <section className="relative flex flex-col rounded-card border-2 border-brand bg-surface p-7">
+        <section className={`relative flex flex-col rounded-card border-2 border-brand bg-surface p-7${ring("pro")}`}>
           <span className="absolute right-6 top-6 rounded-full bg-brand-soft px-3 py-1 text-[11px] font-semibold uppercase tracking-wide text-brand">
             Most Popular
           </span>
@@ -174,9 +203,17 @@ export function PricingPlans({
               >
                 Current Plan
               </button>
-            ) : (
+            ) : authed ? (
               <a
                 href={buildDodoPlanLink("pro", email, userId)}
+                className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-field bg-brand px-4 text-sm font-medium text-white transition-colors hover:bg-brand-hover"
+              >
+                Start 7-day free trial
+                <ArrowRight size={16} />
+              </a>
+            ) : (
+              <a
+                href={signupHref("pro")}
                 className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-field bg-brand px-4 text-sm font-medium text-white transition-colors hover:bg-brand-hover"
               >
                 Start 7-day free trial
@@ -186,7 +223,7 @@ export function PricingPlans({
           </div>
         </section>
 
-        <section className="flex flex-col rounded-card border border-line bg-surface p-7">
+        <section className={`flex flex-col rounded-card border border-line bg-surface p-7${ring("scale")}`}>
           <p className="text-xs font-medium uppercase tracking-[0.14em] text-ink-muted">Scale</p>
           <h2 className="mt-2 font-sans text-2xl font-semibold tracking-tight text-ink">
             Agencies + teams
@@ -200,13 +237,23 @@ export function PricingPlans({
           <p className="mt-1 text-xs font-medium text-success">7-day free trial, no card</p>
           <FeatureList features={SCALE_FEATURES} />
           <div className="mt-8 pt-2">
-            <a
-              href={buildDodoPlanLink("scale", email, userId)}
-              className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-field border border-line px-4 text-sm font-medium text-ink transition-colors hover:border-ink"
-            >
-              Start Scale trial
-              <ArrowRight size={16} />
-            </a>
+            {authed ? (
+              <a
+                href={buildDodoPlanLink("scale", email, userId)}
+                className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-field border border-line px-4 text-sm font-medium text-ink transition-colors hover:border-ink"
+              >
+                Start Scale trial
+                <ArrowRight size={16} />
+              </a>
+            ) : (
+              <a
+                href={signupHref("scale")}
+                className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-field border border-line px-4 text-sm font-medium text-ink transition-colors hover:border-ink"
+              >
+                Start Scale trial
+                <ArrowRight size={16} />
+              </a>
+            )}
           </div>
         </section>
       </div>

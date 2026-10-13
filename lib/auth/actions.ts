@@ -10,13 +10,14 @@ export async function login(formData: FormData) {
   const supabase = await createSupabaseServerClient();
   const email = String(formData.get("email") ?? "");
   const password = String(formData.get("password") ?? "");
+  const next = String(formData.get("next") ?? "");
   const { error } = await supabase.auth.signInWithPassword({ email, password });
   if (error) {
     console.error("[login]", error.message);
     redirect("/login?error=" + encodeURIComponent(error.message));
   }
   revalidatePath("/dashboard", "layout");
-  redirect("/dashboard");
+  redirect(next || "/dashboard");
 }
 
 export async function signup(formData: FormData) {
@@ -29,6 +30,10 @@ export async function signup(formData: FormData) {
 
   const email = String(formData.get("email") ?? "").trim();
   const password = String(formData.get("password") ?? "");
+  const plan = String(formData.get("plan") ?? "");
+  const cycle = String(formData.get("cycle") ?? "monthly");
+  const next = String(formData.get("next") ?? "");
+  const afterAuth = next || (plan ? `/dashboard/pricing?plan=${plan}&cycle=${cycle}` : "/dashboard?signup=1");
 
   if (password.length < 6) {
     redirect("/signup?error=" + encodeURIComponent("Password must be at least 6 characters."));
@@ -54,7 +59,7 @@ export async function signup(formData: FormData) {
   // cannot be used until the link is opened. Redirecting to /dashboard here
   // would bounce straight back to /login with no explanation.
   if (!data.session) {
-    redirect("/check-email");
+    redirect(plan ? `/check-email?plan=${plan}&cycle=${cycle}` : "/check-email");
   }
 
   // Confirmation is disabled in Supabase, so the account is usable already.
@@ -64,7 +69,7 @@ export async function signup(formData: FormData) {
   }
 
   revalidatePath("/dashboard", "layout");
-  redirect("/dashboard?signup=1");
+  redirect(afterAuth);
 }
 
 export async function logout() {
@@ -73,7 +78,7 @@ export async function logout() {
   redirect("/");
 }
 
-export async function signInWithGoogle() {
+export async function signInWithGoogle(formData?: FormData) {
   const supabase = await createSupabaseServerClient();
   const headersList = await headers();
   const origin =
@@ -81,10 +86,13 @@ export async function signInWithGoogle() {
     process.env.NEXT_PUBLIC_SITE_URL ??
     "http://localhost:3000";
 
+  const next =
+    (formData ? String(formData.get("next") ?? "") : "") || "/onboarding";
+
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: "google",
     options: {
-      redirectTo: `${origin}/auth/callback?next=/onboarding`,
+      redirectTo: `${origin}/auth/callback?next=${encodeURIComponent(next)}`,
     },
   });
 

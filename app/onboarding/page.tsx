@@ -7,7 +7,7 @@ const steps = [
   {
     title: "Pick your plan",
     body: "Start with a 7-day free trial of Pro, or explore the free tier first.",
-    href: "/pricing",
+    href: "/dashboard/pricing",
     cta: "View pricing",
   },
   {

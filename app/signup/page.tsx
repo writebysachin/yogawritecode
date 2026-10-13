@@ -7,12 +7,21 @@ import { signup } from "@/lib/auth/actions";
 
 export const metadata: Metadata = { title: "Sign up" };
 
+const PLAN_LABEL: Record<string, string> = {
+  starter: "Starter ($9/mo)",
+  pro: "Pro ($19/mo)",
+  scale: "Scale ($40/mo)",
+};
+
 export default async function SignupPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string }>;
+  searchParams: Promise<{ error?: string; plan?: string; cycle?: string; next?: string }>;
 }) {
-  const { error } = await searchParams;
+  const { error, plan, cycle, next } = await searchParams;
+  const planLabel = plan ? (PLAN_LABEL[plan] ?? plan) : null;
+  const loginHref = plan ? `/login?plan=${plan}&cycle=${cycle ?? "monthly"}` : "/login";
+  const nextParam = next ?? (plan ? `/dashboard/pricing?plan=${plan}&cycle=${cycle ?? "monthly"}` : undefined);
 
   return (
     <AuthShell>
@@ -22,18 +31,26 @@ export default async function SignupPage({
       <p className="mt-2 text-sm text-ink-secondary">
         Already have an account?{" "}
         <Link
-          href="/login"
+          href={loginHref}
           className="font-medium text-brand underline underline-offset-4 hover:text-brand-hover"
         >
           Log in
         </Link>
       </p>
+      {planLabel ? (
+        <p className="mt-3 rounded-control bg-brand-soft/40 px-3 py-2 text-sm font-medium text-brand">
+          You&apos;re starting the {planLabel} trial — 7 days free, no card required.
+        </p>
+      ) : null}
 
       <div className="mt-5">
         <FormError message={error} />
       </div>
 
       <form action={signup} className="mt-5 space-y-4">
+        {plan ? <input type="hidden" name="plan" value={plan} /> : null}
+        {cycle ? <input type="hidden" name="cycle" value={cycle} /> : null}
+        {nextParam ? <input type="hidden" name="next" value={nextParam} /> : null}
         <Field label="Email" htmlFor="email">
           <input id="email" name="email" type="email" required className={inputClass} />
         </Field>
@@ -48,7 +65,7 @@ export default async function SignupPage({
 
       <OrDivider />
 
-      <GoogleAuthButton label="Sign up with Google" />
+      <GoogleAuthButton label="Sign up with Google" next={nextParam} />
 
       <p className="mt-5 text-xs text-ink-muted">
         By creating an account you agree to our{" "}

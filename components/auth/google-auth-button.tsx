@@ -1,8 +1,9 @@
 import { signInWithGoogle } from "@/lib/auth/actions";
 
-export function GoogleAuthButton({ label }: { label: string }) {
+export function GoogleAuthButton({ label, next }: { label: string; next?: string }) {
   return (
     <form action={signInWithGoogle}>
+      {next ? <input type="hidden" name="next" value={next} /> : null}
       <button
         type="submit"
         className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-field border border-line bg-surface px-4 text-sm font-medium text-ink transition-colors hover:bg-surface-subtle"

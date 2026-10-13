@@ -9,7 +9,12 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
-export default async function PricingPage() {
+export default async function PricingPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ plan?: string; cycle?: string }>;
+}) {
+  const { plan } = (await searchParams) ?? {};
   const supabase = await createSupabaseServerClient();
   const { data: userData } = await supabase.auth.getUser();
 
@@ -23,6 +28,7 @@ export default async function PricingPage() {
 
   const profileRow = profile as { subscription_status?: string | null } | null;
   const isPro = profileRow?.subscription_status === "active" || profileRow?.subscription_status === "trialing";
+  const highlightPlan = plan === "starter" || plan === "pro" || plan === "scale" ? plan : undefined;
 
   // Current workspace usage, shown so upgrading feels informed rather than pushy.
   const [projectsRes, analysesRes, draftsRes] = await Promise.all([
@@ -46,6 +52,12 @@ export default async function PricingPage() {
         title="Upgrade to Pro"
         description="Simple, transparent pricing for serious content teams. Cancel anytime."
       />
+      {highlightPlan ? (
+        <p className="mt-4 rounded-control bg-brand-soft/40 px-4 py-2.5 text-sm font-medium text-brand">
+          Continuing with {highlightPlan === "pro" ? "Pro" : highlightPlan === "scale" ? "Scale" : "Starter"} — pick
+          monthly or yearly below to check out.
+        </p>
+      ) : null}
 
       <div className="mt-8">
         <h2 className="text-sm font-semibold uppercase tracking-[0.12em] text-ink-muted">Your usage</h2>
@@ -66,6 +78,7 @@ export default async function PricingPage() {
           isPro={isPro}
           email={userData.user?.email ?? undefined}
           userId={userData.user?.id ?? undefined}
+          highlightPlan={highlightPlan}
         />
       </div>
 

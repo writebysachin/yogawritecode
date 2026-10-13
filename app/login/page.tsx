@@ -7,12 +7,21 @@ import { login } from "@/lib/auth/actions";
 
 export const metadata: Metadata = { title: "Log in" };
 
+const PLAN_LABEL: Record<string, string> = {
+  starter: "Starter ($9/mo)",
+  pro: "Pro ($19/mo)",
+  scale: "Scale ($40/mo)",
+};
+
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams: Promise<{ error?: string }>;
+  searchParams: Promise<{ error?: string; plan?: string; cycle?: string; next?: string }>;
 }) {
-  const { error } = await searchParams;
+  const { error, plan, cycle, next } = await searchParams;
+  const planLabel = plan ? (PLAN_LABEL[plan] ?? plan) : null;
+  const signupHref = plan ? `/signup?plan=${plan}&cycle=${cycle ?? "monthly"}` : "/signup";
+  const nextParam = next ?? (plan ? `/dashboard/pricing?plan=${plan}&cycle=${cycle ?? "monthly"}` : undefined);
 
   return (
     <AuthShell>
@@ -20,18 +29,24 @@ export default async function LoginPage({
       <p className="mt-2 text-sm text-ink-secondary">
         New here?{" "}
         <Link
-          href="/signup"
+          href={signupHref}
           className="font-medium text-brand underline underline-offset-4 hover:text-brand-hover"
         >
           Create an account
         </Link>
       </p>
+      {planLabel ? (
+        <p className="mt-3 rounded-control bg-brand-soft/40 px-3 py-2 text-sm font-medium text-brand">
+          Welcome back — log in to continue to {planLabel}.
+        </p>
+      ) : null}
 
       <div className="mt-5">
         <FormError message={error} />
       </div>
 
       <form action={login} className="mt-5 space-y-4">
+        {nextParam ? <input type="hidden" name="next" value={nextParam} /> : null}
         <Field label="Email" htmlFor="email">
           <input id="email" name="email" type="email" required className={inputClass} />
         </Field>
@@ -45,7 +60,7 @@ export default async function LoginPage({
 
       <OrDivider />
 
-      <GoogleAuthButton label="Continue with Google" />
+      <GoogleAuthButton label="Continue with Google" next={nextParam} />
 
       <p className="mt-5 text-xs text-ink-muted">
         By continuing you agree to our{" "}
