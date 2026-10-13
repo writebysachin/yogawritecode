@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { generateSection } from "@/lib/ai/sections";
+import { OUT_OF_CREDITS_SHORT, refundCredit, reserveCredit } from "@/lib/credits";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export type ArticleDraft = {
@@ -28,7 +29,7 @@ async function authProject(projectId: string) {
   if (!userData.user) redirect("/login");
   const { data: project } = await supabase.from("projects").select("*").eq("id", projectId).single();
   if (!project) redirect("/dashboard");
-  return { supabase, project };
+  return { supabase, project, user: userData.user };
 }
 
 export async function createDraft(formData: FormData) {
@@ -119,7 +120,7 @@ export async function draftSection(
   formData: FormData
 ): Promise<{ ok: boolean; text?: string; error?: string }> {
   const projectId = String(formData.get("projectId") ?? "");
-  const { project } = await authProject(projectId);
+  const { project, supabase, user } = await authProject(projectId);
 
   const input = {
     websiteUrl: String(project.website_url),
@@ -129,10 +130,14 @@ export async function draftSection(
     mode: "draft" as const,
   };
 
+  const reserve = await reserveCredit(supabase, user);
+  if (!reserve.ok) return { ok: false, error: OUT_OF_CREDITS_SHORT };
+
   try {
     const text = await generateSection(input);
     return { ok: true, text };
   } catch {
+    if (reserve.charged) await refundCredit(supabase, user.id);
     return { ok: false, error: "Couldn't draft this section right now. Try again." };
   }
 }
@@ -141,7 +146,7 @@ export async function improveSection(
   formData: FormData
 ): Promise<{ ok: boolean; text?: string; error?: string }> {
   const projectId = String(formData.get("projectId") ?? "");
-  const { project } = await authProject(projectId);
+  const { project, supabase, user } = await authProject(projectId);
 
   const input = {
     websiteUrl: String(project.website_url),
@@ -152,10 +157,14 @@ export async function improveSection(
     mode: "improve" as const,
   };
 
+  const reserve = await reserveCredit(supabase, user);
+  if (!reserve.ok) return { ok: false, error: OUT_OF_CREDITS_SHORT };
+
   try {
     const text = await generateSection(input);
     return { ok: true, text };
   } catch {
+    if (reserve.charged) await refundCredit(supabase, user.id);
     return { ok: false, error: "Couldn't rewrite this section right now. Try again." };
   }
 }
