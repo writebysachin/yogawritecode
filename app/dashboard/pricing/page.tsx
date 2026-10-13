@@ -79,6 +79,7 @@ export default async function PricingPage({
           email={userData.user?.email ?? undefined}
           userId={userData.user?.id ?? undefined}
           highlightPlan={highlightPlan}
+          hideFree
         />
       </div>
 

@@ -58,6 +58,7 @@ export function PricingPlans({
   email,
   userId,
   highlightPlan,
+  hideFree,
 }: {
   monthlyPriceId?: string;
   yearlyPriceId?: string;
@@ -65,6 +66,7 @@ export function PricingPlans({
   email?: string;
   userId?: string;
   highlightPlan?: string;
+  hideFree?: boolean;
 }) {
   const [cycle, setCycle] = useState<BillingCycle>("monthly");
 
@@ -110,36 +112,38 @@ export function PricingPlans({
         </div>
       </div>
 
-      <div className="mt-10 grid gap-6 md:grid-cols-2 xl:grid-cols-4">
-        <section className="flex flex-col rounded-card border border-line bg-surface p-7">
-          <p className="text-xs font-medium uppercase tracking-[0.14em] text-ink-muted">Free</p>
-          <h2 className="mt-2 font-sans text-2xl font-semibold tracking-tight text-ink">Try free</h2>
-          <p className="mt-5 flex items-baseline gap-2">
-            <span className="font-sans text-4xl font-semibold tracking-tight text-ink">$0</span>
-            <span className="text-sm text-ink-muted">/ forever</span>
-          </p>
-          <p className="mt-1 text-xs font-medium text-success">No credit card required</p>
-          <FeatureList features={FREE_FEATURES} />
-          <div className="mt-8 pt-2">
-            {authed ? (
-              <button
-                type="button"
-                disabled
-                className="inline-flex h-11 w-full cursor-default items-center justify-center rounded-field border border-line bg-surface text-sm font-medium text-ink-muted"
-              >
-                Current Plan
-              </button>
-            ) : (
-              <a
-                href="/signup"
-                className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-field bg-ink px-4 text-sm font-medium text-white transition-colors hover:bg-gray-800"
-              >
-                Start for free
-                <ArrowRight size={16} />
-              </a>
-            )}
-          </div>
-        </section>
+      <div className={`mt-10 grid gap-6 md:grid-cols-2 ${hideFree ? "xl:grid-cols-3" : "xl:grid-cols-4"}`}>
+        {hideFree ? null : (
+          <section className="flex flex-col rounded-card border border-line bg-surface p-7">
+            <p className="text-xs font-medium uppercase tracking-[0.14em] text-ink-muted">Free</p>
+            <h2 className="mt-2 font-sans text-2xl font-semibold tracking-tight text-ink">Try free</h2>
+            <p className="mt-5 flex items-baseline gap-2">
+              <span className="font-sans text-4xl font-semibold tracking-tight text-ink">$0</span>
+              <span className="text-sm text-ink-muted">/ forever</span>
+            </p>
+            <p className="mt-1 text-xs font-medium text-success">No credit card required</p>
+            <FeatureList features={FREE_FEATURES} />
+            <div className="mt-8 pt-2">
+              {authed ? (
+                <button
+                  type="button"
+                  disabled
+                  className="inline-flex h-11 w-full cursor-default items-center justify-center rounded-field border border-line bg-surface text-sm font-medium text-ink-muted"
+                >
+                  Current Plan
+                </button>
+              ) : (
+                <a
+                  href="/signup"
+                  className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-field bg-ink px-4 text-sm font-medium text-white transition-colors hover:bg-gray-800"
+                >
+                  Start for free
+                  <ArrowRight size={16} />
+                </a>
+              )}
+            </div>
+          </section>
+        )}
 
         <section className={`flex flex-col rounded-card border border-line bg-surface p-7${ring("starter")}`}>
           <p className="text-xs font-medium uppercase tracking-[0.14em] text-ink-muted">Starter</p>
