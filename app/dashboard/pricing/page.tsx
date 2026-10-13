@@ -13,9 +13,9 @@ export const metadata: Metadata = {
 export default async function PricingPage({
   searchParams,
 }: {
-  searchParams?: Promise<{ plan?: string; cycle?: string }>;
+  searchParams?: Promise<{ plan?: string; cycle?: string; new?: string }>;
 }) {
-  const { plan } = (await searchParams) ?? {};
+  const { plan, new: isNew } = (await searchParams) ?? {};
   const supabase = await createSupabaseServerClient();
   const { data: userData } = await supabase.auth.getUser();
 
@@ -77,6 +77,10 @@ export default async function PricingPage({
         <p className="mt-4 rounded-control bg-brand-soft/40 px-4 py-2.5 text-sm font-medium text-brand">
           Continuing with {highlightPlan === "pro" ? "Pro" : highlightPlan === "scale" ? "Scale" : "Starter"} — pick
           monthly or yearly below to check out.
+        </p>
+      ) : isNew ? (
+        <p className="mt-4 rounded-control bg-brand-soft/40 px-4 py-2.5 text-sm font-medium text-brand">
+          Welcome — pick a plan to start your 7-day free trial, or explore free first. No card required.
         </p>
       ) : null}
 
@@ -144,7 +148,7 @@ export default async function PricingPage({
           email={userData.user?.email ?? undefined}
           userId={userData.user?.id ?? undefined}
           highlightPlan={highlightPlan}
-          hideFree
+          hideFree={!isNew}
         />
       </div>
 
