@@ -4,6 +4,7 @@ import { AuthShell } from "@/components/auth/auth-shell";
 import { GoogleAuthButton } from "@/components/auth/google-auth-button";
 import { Field, FormError, OrDivider, PrimaryButton, inputClass } from "@/components/form";
 import { signup } from "@/lib/auth/actions";
+import { friendlyAuthError } from "@/lib/auth/errors";
 
 export const metadata: Metadata = { title: "Sign up" };
 
@@ -21,7 +22,8 @@ export default async function SignupPage({
   const { error, plan, cycle, next } = await searchParams;
   const planLabel = plan ? (PLAN_LABEL[plan] ?? plan) : null;
   const loginHref = plan ? `/login?plan=${plan}&cycle=${cycle ?? "monthly"}` : "/login";
-  const nextParam = next ?? (plan ? `/dashboard/pricing?plan=${plan}&cycle=${cycle ?? "monthly"}` : undefined);
+  const nextParam =
+    next ?? (plan ? `/dashboard/pricing?plan=${plan}&cycle=${cycle ?? "monthly"}&new=1` : undefined);
 
   return (
     <AuthShell>
@@ -44,7 +46,7 @@ export default async function SignupPage({
       ) : null}
 
       <div className="mt-5">
-        <FormError message={error} />
+        <FormError message={friendlyAuthError(error)} />
       </div>
 
       <form action={signup} className="mt-5 space-y-4">

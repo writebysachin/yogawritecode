@@ -17,7 +17,24 @@ export async function login(formData: FormData) {
     redirect("/login?error=" + encodeURIComponent(error.message));
   }
   revalidatePath("/dashboard", "layout");
-  redirect(next || "/dashboard");
+  if (next) redirect(next);
+
+  // Returning users go straight to the dashboard. Brand-new accounts
+  // (created in the last 5 minutes) see pricing first, then checkout,
+  // then the onboarding welcome — mirroring the Google OAuth flow.
+  const { data } = await supabase.auth.getUser();
+  if (data.user) {
+    const { data: profile } = await supabase
+      .from("profiles")
+      .select("created_at")
+      .eq("id", data.user.id)
+      .maybeSingle();
+    const createdAt = (profile as { created_at?: string } | null)?.created_at;
+    const isNew =
+      !createdAt || Date.now() - new Date(createdAt).getTime() < 5 * 60 * 1000;
+    if (isNew) redirect("/dashboard/pricing?new=1");
+  }
+  redirect("/dashboard");
 }
 
 export async function signup(formData: FormData) {
@@ -33,7 +50,14 @@ export async function signup(formData: FormData) {
   const plan = String(formData.get("plan") ?? "");
   const cycle = String(formData.get("cycle") ?? "monthly");
   const next = String(formData.get("next") ?? "");
-  const afterAuth = next || (plan ? `/dashboard/pricing?plan=${plan}&cycle=${cycle}` : "/dashboard?signup=1");
+  // Plan flow: pricing first (with welcome banner), pricing links to
+  // checkout, checkout routes to Dodo or back here. Free flow: onboarding
+  // welcome instead of a bare dashboard.
+  const afterAuth =
+    next ||
+    (plan
+      ? `/dashboard/pricing?plan=${plan}&cycle=${cycle}&new=1`
+      : "/onboarding?welcome=1");
 
   if (password.length < 6) {
     redirect("/signup?error=" + encodeURIComponent("Password must be at least 6 characters."));

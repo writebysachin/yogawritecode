@@ -15,7 +15,7 @@ export default async function PricingPage({
 }: {
   searchParams?: Promise<{ plan?: string; cycle?: string; new?: string }>;
 }) {
-  const { plan, new: isNew } = (await searchParams) ?? {};
+  const { plan, cycle, new: isNew } = (await searchParams) ?? {};
   const supabase = await createSupabaseServerClient();
   const { data: userData } = await supabase.auth.getUser();
 
@@ -34,6 +34,7 @@ export default async function PricingPage({
   } | null;
   const isPro = profileRow?.subscription_status === "active" || profileRow?.subscription_status === "trialing";
   const highlightPlan = plan === "starter" || plan === "pro" || plan === "scale" ? plan : undefined;
+  const initialCycle = cycle === "yearly" ? ("yearly" as const) : ("monthly" as const);
   const credits = profileRow?.ai_credits_balance ?? 50;
 
   // Current workspace usage, shown so upgrading feels informed rather than pushy.
@@ -143,6 +144,7 @@ export default async function PricingPage({
           userId={userData.user?.id ?? undefined}
           highlightPlan={highlightPlan}
           hideFree={!isNew}
+          initialCycle={initialCycle}
         />
       </div>
 

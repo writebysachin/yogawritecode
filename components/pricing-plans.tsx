@@ -2,9 +2,7 @@
 
 import { useState } from "react";
 import { ArrowRight, Check, X } from "lucide-react";
-import { buildDodoPlanLink } from "@/lib/dodo";
-
-type BillingCycle = "monthly" | "yearly";
+import type { BillingCycle } from "@/lib/dodo";
 
 const FREE_FEATURES = [
   { label: "50 AI credits, no card required", included: true },
@@ -59,19 +57,21 @@ export function PricingPlans({
   userId,
   highlightPlan,
   hideFree,
+  initialCycle,
 }: {
   isPro: boolean;
   email?: string;
   userId?: string;
   highlightPlan?: string;
   hideFree?: boolean;
+  initialCycle?: BillingCycle;
 }) {
-  const [cycle, setCycle] = useState<BillingCycle>("monthly");
+  const [cycle, setCycle] = useState<BillingCycle>(initialCycle ?? "monthly");
 
-  // Marketing context (no session) must never jump straight to checkout:
-  // route through signup so the webhook can match the payment to an account.
-  const authed = Boolean(email ?? userId);
-  const signupHref = (plan: string) => `/signup?plan=${plan}&cycle=${cycle}`;
+  // All selections land on the internal checkout page (/checkout), which
+  // shows the order summary and then routes authed users to Dodo or new
+  // users through signup (so the webhook can match payment to account).
+  const checkoutHref = (plan: string) => `/checkout?plan=${plan}&cycle=${cycle}`;
 
   const prices = {
     starter: cycle === "yearly" ? "$86" : "$9",
@@ -122,7 +122,7 @@ export function PricingPlans({
             <p className="mt-1 text-xs font-medium text-success">No credit card required</p>
             <FeatureList features={FREE_FEATURES} />
             <div className="mt-8 pt-2">
-              {authed ? (
+              {isPro || email || userId ? (
                 <button
                   type="button"
                   disabled
@@ -157,23 +157,13 @@ export function PricingPlans({
           <p className="mt-1 text-xs font-medium text-success">7-day free trial, no card</p>
           <FeatureList features={STARTER_FEATURES} />
           <div className="mt-8 pt-2">
-            {authed ? (
-              <a
-                href={buildDodoPlanLink("starter", email, userId)}
-                className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-field border border-line px-4 text-sm font-medium text-ink transition-colors hover:border-ink"
-              >
-                Start Starter trial
-                <ArrowRight size={16} />
-              </a>
-            ) : (
-              <a
-                href={signupHref("starter")}
-                className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-field border border-line px-4 text-sm font-medium text-ink transition-colors hover:border-ink"
-              >
-                Start Starter trial
-                <ArrowRight size={16} />
-              </a>
-            )}
+            <a
+              href={checkoutHref("starter")}
+              className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-field border border-line px-4 text-sm font-medium text-ink transition-colors hover:border-ink"
+            >
+              Select Starter
+              <ArrowRight size={16} />
+            </a>
           </div>
         </section>
 
@@ -205,20 +195,12 @@ export function PricingPlans({
               >
                 Current Plan
               </button>
-            ) : authed ? (
-              <a
-                href={buildDodoPlanLink("pro", email, userId)}
-                className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-field bg-brand px-4 text-sm font-medium text-white transition-colors hover:bg-brand-hover"
-              >
-                Start 7-day free trial
-                <ArrowRight size={16} />
-              </a>
             ) : (
               <a
-                href={signupHref("pro")}
+                href={checkoutHref("pro")}
                 className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-field bg-brand px-4 text-sm font-medium text-white transition-colors hover:bg-brand-hover"
               >
-                Start 7-day free trial
+                Select Pro
                 <ArrowRight size={16} />
               </a>
             )}
@@ -239,23 +221,13 @@ export function PricingPlans({
           <p className="mt-1 text-xs font-medium text-success">7-day free trial, no card</p>
           <FeatureList features={SCALE_FEATURES} />
           <div className="mt-8 pt-2">
-            {authed ? (
-              <a
-                href={buildDodoPlanLink("scale", email, userId)}
-                className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-field border border-line px-4 text-sm font-medium text-ink transition-colors hover:border-ink"
-              >
-                Start Scale trial
-                <ArrowRight size={16} />
-              </a>
-            ) : (
-              <a
-                href={signupHref("scale")}
-                className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-field border border-line px-4 text-sm font-medium text-ink transition-colors hover:border-ink"
-              >
-                Start Scale trial
-                <ArrowRight size={16} />
-              </a>
-            )}
+            <a
+              href={checkoutHref("scale")}
+              className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-field border border-line px-4 text-sm font-medium text-ink transition-colors hover:border-ink"
+            >
+              Select Scale
+              <ArrowRight size={16} />
+            </a>
           </div>
         </section>
       </div>

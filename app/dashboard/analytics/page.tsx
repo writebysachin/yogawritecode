@@ -8,7 +8,10 @@ export const metadata: Metadata = { title: "Analytics" };
 
 const STATUS_MESSAGE: Record<string, { ok: boolean; text: string }> = {
   connected: { ok: true, text: "Google connected — Search Console sites are listed below." },
-  denied: { ok: false, text: "Google access was denied. Try again to connect Search Console." },
+  denied: {
+    ok: false,
+    text: "Google blocked the connection (Error 403: access_denied). The OAuth consent screen is still in Testing mode — add your email under Google Cloud Console → APIs & Services → OAuth consent screen → Audience → Test users, then reconnect.",
+  },
   invalid_state: { ok: false, text: "That login attempt expired. Start the connection again." },
   login_required: { ok: false, text: "Log in first, then reconnect Google." },
   exchange_failed: { ok: false, text: "Google did not accept the connection. Try again." },

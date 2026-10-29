@@ -5,7 +5,16 @@ import { SignupTracker } from "@/components/analytics/signup-tracker";
 
 export const metadata: Metadata = { title: "Check your email" };
 
-export default function CheckEmailPage() {
+export default async function CheckEmailPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ plan?: string; cycle?: string }>;
+}) {
+  const { plan, cycle } = (await searchParams) ?? {};
+  const loginHref =
+    plan && (plan === "starter" || plan === "pro" || plan === "scale")
+      ? `/login?plan=${plan}&cycle=${cycle === "yearly" ? "yearly" : "monthly"}`
+      : "/login";
   return (
     <AuthShell>
       <SignupTracker />
@@ -14,7 +23,8 @@ export default function CheckEmailPage() {
       </h1>
       <p className="mt-2 text-sm text-ink-secondary">
         We sent a confirmation link to the address you signed up with. Open it to activate your
-        account, then come back and log in.
+        account, then come back and log in
+        {plan ? " to continue to pricing and checkout" : ""}.
       </p>
 
       <div className="mt-6 rounded-field border border-line bg-surface-subtle px-4 py-3 text-sm text-ink-secondary">
@@ -31,7 +41,7 @@ export default function CheckEmailPage() {
       <p className="mt-6 text-sm text-ink-secondary">
         Already confirmed?{" "}
         <Link
-          href="/login"
+          href={loginHref}
           className="font-medium text-brand underline underline-offset-4 hover:text-brand-hover"
         >
           Log in
