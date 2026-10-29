@@ -16,6 +16,7 @@ const navigation: NavItem[] = [
   { label: "Solutions", href: "/solutions" },
   { label: "Compare", href: "/compare" },
   { label: "Pricing", href: "/pricing" },
+  { label: "About", href: "/about" },
   { label: "Blog", href: "/resources/blog" },
   { label: "FAQs", href: "/resources/faqs" },
 ];

@@ -43,6 +43,12 @@ const footerLinks = [
       { label: "Refund Policy", href: "/refund-policy" },
     ],
   },
+  {
+    title: "Company",
+    links: [
+      { label: "About", href: "/about" },
+    ],
+  },
 ] as const;
 
 export function SiteFooter() {
