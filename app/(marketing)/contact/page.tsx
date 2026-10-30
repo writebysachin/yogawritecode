@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import { ContactForm } from "@/components/marketing/contact-form";
 
 export const metadata: Metadata = {
   title: "Contact",
@@ -18,23 +19,7 @@ export default function ContactPage() {
             Questions, feedback, or partnership ideas? We&apos;d love to hear from you.
           </p>
 
-          <form action="mailto:hello@yogawritecode.com" method="post" encType="text/plain" className="mt-10 space-y-5">
-            <div>
-              <label htmlFor="name" className="text-sm font-medium text-ink">Name</label>
-              <input id="name" name="name" required className="mt-1.5 w-full rounded-field border border-line bg-surface px-3.5 py-2.5 text-sm text-ink" />
-            </div>
-            <div>
-              <label htmlFor="email" className="text-sm font-medium text-ink">Email</label>
-              <input id="email" name="email" type="email" required className="mt-1.5 w-full rounded-field border border-line bg-surface px-3.5 py-2.5 text-sm text-ink" />
-            </div>
-            <div>
-              <label htmlFor="message" className="text-sm font-medium text-ink">Message</label>
-              <textarea id="message" name="message" rows={5} required className="mt-1.5 w-full rounded-field border border-line bg-surface px-3.5 py-2.5 text-sm text-ink" />
-            </div>
-            <button type="submit" className="rounded-control bg-brand px-4 py-2.5 text-sm font-semibold text-white shadow-pop transition-colors hover:bg-brand-hover">
-              Send message
-            </button>
-          </form>
+          <ContactForm />
 
           <p className="mt-8 text-sm text-ink-muted">
             Prefer email directly? Write to{" "}
