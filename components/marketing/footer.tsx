@@ -78,7 +78,7 @@ export function SiteFooter() {
           ))}
         </nav>
       </div>
-      <div className="mx-auto mt-10 max-w-[1160px]">
+      <div className="mx-auto mt-10 max-w-[1160px] rounded-surface border border-line bg-surface-subtle px-6 py-6 sm:px-8">
         <FooterSubscribe />
       </div>
       <div className="mx-auto mt-10 flex max-w-[1160px] flex-col gap-2 border-t border-line pt-5 text-xs text-ink-muted sm:flex-row sm:justify-between">
