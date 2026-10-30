@@ -3,14 +3,13 @@
 import Script from "next/script";
 import { Suspense, useEffect, useSyncExternalStore } from "react";
 import { AnalyticsConsentBanner } from "@/components/analytics/consent-banner";
-import { GaPageView, GoogleTag } from "@/components/analytics/google-tag";
 import { PostHogPageView } from "@/components/analytics/posthog-pageview";
 import { initPostHog } from "@/lib/posthog";
+import { updateAnalyticsConsent } from "@/lib/gtag";
 import {
   clarityExcludedPaths,
   clarityMaskedSelectors,
   clarityProjectId,
-  gaMeasurementId,
   getConsentServerSnapshot,
   getConsentSnapshot,
   getHydratedSnapshot,
@@ -77,13 +76,11 @@ function ClarityTags({ projectId }: { projectId: string }) {
 }
 
 /**
- * Loads Google Tag Manager, the GA4 measurement stream, and Microsoft Clarity,
- * but only after the visitor accepts. Until then no third-party script is
- * requested and no analytics or session-recording cookie exists.
- *
- * GA4 is loaded directly with gtag.js while the GTM container has no GA4 tag.
- * Once the container reports GA4 itself, `gaMeasurementId` resolves to null
- * (NEXT_PUBLIC_GTM_FIRES_GA4=true) and only the container runs.
+ * Loads Google Tag Manager and Microsoft Clarity, but only after the visitor
+ * accepts. Until then no third-party script is requested and no analytics or
+ * session-recording cookie exists. GA4 is the exception: it loads on every page
+ * through <GoogleTag /> in the root layout, with Consent Mode denying storage
+ * until the visitor accepts here.
  */
 export function TagManager() {
   const decision: ConsentDecision | null = useSyncExternalStore(
@@ -94,7 +91,14 @@ export function TagManager() {
   const hydrated = useHydrated();
 
   useEffect(() => {
-    if (decision === "granted") initPostHog();
+    if (decision === "granted") {
+      // GA4 is already running in Consent Mode; this unlocks its first-party
+      // cookie. Declining leaves analytics_storage at its "denied" default.
+      updateAnalyticsConsent(true);
+      initPostHog();
+    } else if (decision === "denied") {
+      updateAnalyticsConsent(false);
+    }
   }, [decision]);
 
   // Keeps the banner and both tags out of the server HTML, so a returning
@@ -106,11 +110,9 @@ export function TagManager() {
   return (
     <>
       {granted && gtmContainerId ? <GoogleTagManager containerId={gtmContainerId} /> : null}
-      {granted && gaMeasurementId ? <GoogleTag measurementId={gaMeasurementId} /> : null}
       {granted && clarityProjectId ? <ClarityTags projectId={clarityProjectId} /> : null}
       <Suspense fallback={null}>
         <PostHogPageView />
-        {granted && gaMeasurementId ? <GaPageView /> : null}
       </Suspense>
       {decision === null ? (
         <AnalyticsConsentBanner

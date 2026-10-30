@@ -6,14 +6,19 @@ import { useEffect, useRef } from "react";
 import { gtag } from "@/lib/gtag";
 
 /**
- * Google Analytics 4 through gtag.js, rendered by <TagManager /> only after the
- * visitor accepts analytics cookies.
+ * Google Analytics 4 through gtag.js.
  *
- * The loader is written as one inline script on purpose: it defines `gtag`,
- * queues the `config` call, and only then injects gtag.js, so command order is
- * guaranteed without relying on two <Script> tags arriving in sequence.
+ * Loaded on every page, like Google's own snippet, so hits reach GA4 without
+ * waiting for the consent banner. Consent Mode is set to "denied" before the
+ * first hit, so no analytics cookie is written until the visitor accepts;
+ * accepting calls `gtag('consent', 'update', …)` for the first-party cookie.
  *
- * `send_page_view` is left at its default, which reports the landing pageview.
+ * The loader is one inline script on purpose: it defines `gtag`, queues the
+ * consent default plus the `config` call, and only then injects gtag.js, so the
+ * command order is guaranteed without relying on two <Script> tags arriving in
+ * sequence.
+ *
+ * `send_page_view` stays at its default, which reports the landing pageview.
  * Client-side navigations are reported by <GaPageView />, which skips that
  * first URL — so every URL is counted exactly once.
  */
@@ -25,6 +30,12 @@ export function GoogleTag({ measurementId }: { measurementId: string }) {
           w.dataLayer = w.dataLayer || [];
           function gtag(){w.dataLayer.push(arguments);}
           w.gtag = w.gtag || gtag;
+          gtag('consent', 'default', {
+            ad_storage: 'denied',
+            ad_user_data: 'denied',
+            ad_personalization: 'denied',
+            analytics_storage: 'denied'
+          });
           gtag('js', new Date());
           gtag('config', '${measurementId}');
           var s = d.createElement('script');

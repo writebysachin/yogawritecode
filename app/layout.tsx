@@ -3,7 +3,10 @@ import { Analytics } from "@vercel/analytics/next";
 import { SpeedInsights } from "@vercel/speed-insights/next";
 import { Inter } from "next/font/google";
 import localFont from "next/font/local";
+import { Suspense } from "react";
+import { GaPageView, GoogleTag } from "@/components/analytics/google-tag";
 import { TagManager } from "@/components/analytics/tag-manager";
+import { gaMeasurementId } from "@/lib/analytics";
 import { siteBaseUrl, siteConfig } from "@/lib/site";
 import "./globals.css";
 
@@ -83,6 +86,12 @@ export default function RootLayout({
     >
       <body className="bg-canvas font-sans text-ink antialiased">
         {children}
+        {/* GA4 loads on every page (Consent Mode defaults to denied); GTM,
+            Clarity and PostHog still wait for the visitor's choice. */}
+        {gaMeasurementId ? <GoogleTag measurementId={gaMeasurementId} /> : null}
+        <Suspense fallback={null}>
+          {gaMeasurementId ? <GaPageView /> : null}
+        </Suspense>
         <TagManager />
         <Analytics />
         <SpeedInsights />

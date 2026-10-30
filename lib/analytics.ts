@@ -21,12 +21,13 @@ const configuredClarityId: string =
 
 /**
  * GA4 measurement ID of the "Web" data stream, loaded through gtag.js by
- * <GoogleTag /> once the visitor accepts. Set to an empty value to disable it.
+ * <GoogleTag /> in the root layout. Set to an empty value to disable it.
  *
- * gtag.js is only loaded while the GTM container is *not* reporting GA4
- * itself. The moment the container gets a GA4 configuration tag, set
- * NEXT_PUBLIC_GTM_FIRES_GA4=true so both loaders never run at once — that
- * would count every pageview twice.
+ * GA4 is the one tag that loads before the consent banner is answered, because
+ * it runs in Consent Mode with storage denied — hits arrive without cookies and
+ * gain the first-party cookie only when the visitor accepts. gtag.js is skipped
+ * once the GTM container reports GA4 itself (NEXT_PUBLIC_GTM_FIRES_GA4=true),
+ * since running both would count every pageview twice.
  */
 const configuredGaMeasurementId: string =
   process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID ?? "G-HE58ZZSJPW";
