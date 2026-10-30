@@ -15,31 +15,34 @@ export function ContactForm() {
   const firstId = useId();
   const lastId = useId();
   const emailId = useId();
+  const messageId = useId();
+  const messageHintId = useId();
 
   const [firstName, setFirstName] = useState("");
   const [lastName, setLastName] = useState("");
   const [email, setEmail] = useState("");
+  const [message, setMessage] = useState("");
   const [status, setStatus] = useState<Status>("idle");
-  const [message, setMessage] = useState<string | null>(null);
+  const [error, setError] = useState<string | null>(null);
 
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (status === "submitting") return;
 
     setStatus("submitting");
-    setMessage(null);
+    setError(null);
 
     try {
       const response = await fetch("/api/contact", {
         method: "POST",
         headers: { "content-type": "application/json" },
-        body: JSON.stringify({ firstName, lastName, email }),
+        body: JSON.stringify({ firstName, lastName, email, message }),
       });
       const data = (await response.json().catch(() => ({}))) as { error?: string };
 
       if (!response.ok) {
         setStatus("error");
-        setMessage(data.error ?? "Couldn't send your message. Please try again.");
+        setError(data.error ?? "Couldn't send your message. Please try again.");
         return;
       }
 
@@ -47,9 +50,10 @@ export function ContactForm() {
       setFirstName("");
       setLastName("");
       setEmail("");
+      setMessage("");
     } catch {
       setStatus("error");
-      setMessage("Couldn't send your message. Please try again.");
+      setError("Couldn't send your message. Please try again.");
     }
   }
 
@@ -118,6 +122,26 @@ export function ContactForm() {
         />
       </div>
 
+      <div>
+        <label htmlFor={messageId} className="text-sm font-medium text-ink">
+          Message
+        </label>
+        <textarea
+          id={messageId}
+          name="message"
+          required
+          rows={5}
+          aria-describedby={messageHintId}
+          placeholder="Tell us what you're working on…"
+          value={message}
+          onChange={(event) => setMessage(event.target.value)}
+          className={`${fieldClass} h-auto resize-y py-3 leading-6`}
+        />
+        <p id={messageHintId} className="mt-1.5 text-xs text-ink-muted">
+          {message.length.toLocaleString()} / 5,000 characters
+        </p>
+      </div>
+
       <div className="flex flex-wrap items-center gap-4">
         <button
           type="submit"
@@ -126,8 +150,8 @@ export function ContactForm() {
         >
           {status === "submitting" ? "Sending…" : "Send message"}
         </button>
-        <p aria-live="polite" className={`text-sm text-error ${message ? "" : "sr-only"}`}>
-          {message ?? ""}
+        <p aria-live="polite" className={`text-sm text-error ${error ? "" : "sr-only"}`}>
+          {error ?? ""}
         </p>
       </div>
     </form>

@@ -31,6 +31,7 @@ async function sendEmail(options: {
   to: string;
   subject: string;
   html: string;
+  replyTo?: string;
 }): Promise<EmailResult> {
   if (!apiKey || !from) {
     console.warn(
@@ -46,6 +47,7 @@ async function sendEmail(options: {
       to: options.to,
       subject: options.subject,
       html: options.html,
+      ...(options.replyTo ? { replyTo: options.replyTo } : {}),
     });
 
     if (error) {
@@ -145,5 +147,87 @@ export function sendWelcomeEmail(to: string): Promise<EmailResult> {
       footnote:
         "You are receiving this because you created a Yoga Write Code account. If you did not, you can ignore this email.",
     }),
+  });
+}
+
+/** Escapes visitor input before it is interpolated into the email HTML. */
+function escapeHtml(value: string): string {
+  return value
+    .replace(/&/g, "&amp;")
+    .replace(/</g, "&lt;")
+    .replace(/>/g, "&gt;")
+    .replace(/"/g, "&quot;")
+    .replace(/'/g, "&#39;");
+}
+
+/**
+ * Delivers a /contact submission to the team inbox, with the visitor's address
+ * as Reply-To so answering is just "Reply". CONTACT_EMAIL overrides the
+ * recipient; RESEND_FROM_EMAIL must be on a domain verified in Resend.
+ */
+export function sendContactEmail(input: {
+  firstName: string;
+  lastName?: string;
+  email: string;
+  message: string;
+}): Promise<EmailResult> {
+  const to = process.env.CONTACT_EMAIL?.trim() || "hello@yogawritecode.com";
+  const name = [input.firstName, input.lastName].filter(Boolean).join(" ");
+  const rows: Array<[string, string]> = [
+    ["Name", name],
+    ["Email", input.email],
+  ];
+
+  const detailRows = rows
+    .map(
+      ([label, value]) => `
+        <tr>
+          <td style="padding:6px 0;width:88px;font-size:13px;color:#78716c;vertical-align:top;">${label}</td>
+          <td style="padding:6px 0;font-size:14px;color:#1c1917;">${escapeHtml(value)}</td>
+        </tr>`,
+    )
+    .join("");
+
+  return sendEmail({
+    to,
+    replyTo: input.email,
+    subject: `Contact form: ${name || input.email}`,
+    html: `<!doctype html>
+<html lang="en">
+  <body style="margin:0;padding:0;background:#fafaf9;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;">
+    <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#fafaf9;padding:32px 16px;">
+      <tr>
+        <td align="center">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="max-width:560px;background:#ffffff;border:1px solid #e7e5e4;border-radius:10px;padding:28px 32px;">
+            <tr>
+              <td>
+                <p style="margin:0;font-size:11px;font-weight:600;letter-spacing:0.16em;text-transform:uppercase;color:#5b4bdb;">Yoga Write Code</p>
+                <h1 style="margin:14px 0 0 0;font-size:20px;line-height:1.3;font-weight:600;color:#1c1917;">New contact message</h1>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding-top:16px;">
+                <table role="presentation" cellpadding="0" cellspacing="0" width="100%">${detailRows}</table>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding-top:18px;">
+                <p style="margin:0 0 6px 0;font-size:13px;color:#78716c;">Message</p>
+                <div style="padding:14px 16px;background:#f5f5f4;border-radius:8px;font-size:14px;line-height:1.65;color:#1c1917;white-space:pre-wrap;">${escapeHtml(input.message)}</div>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding-top:20px;border-top:1px solid #e7e5e4;">
+                <p style="margin:14px 0 0 0;font-size:12px;line-height:1.6;color:#78716c;">
+                  Reply to this email to answer ${escapeHtml(name || input.email)} directly.
+                </p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>`,
   });
 }
