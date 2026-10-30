@@ -1,29 +1,23 @@
-"use client";
-
-import { useEffect, useRef } from "react";
-
+/**
+ * Substack newsletter signup for the footer.
+ *
+ * Rendered as a plain iframe instead of the old Ghost signup script, so this
+ * stays a server component and ships no client JavaScript. It is lazy-loaded
+ * because the footer sits at the bottom of every marketing page — Substack is
+ * only requested once the visitor scrolls near it.
+ */
 export function FooterSubscribe() {
-  const containerRef = useRef<HTMLDivElement>(null);
-
-  useEffect(() => {
-    const container = containerRef.current;
-    if (!container || container.querySelector("script")) return;
-
-    const script = document.createElement("script");
-    script.src = "https://cdn.jsdelivr.net/ghost/signup-form@~0.3/umd/signup-form.min.js";
-    script.async = true;
-    script.dataset.buttonColor = "#4e00ff";
-    script.dataset.buttonTextColor = "#FFFFFF";
-    script.dataset.site = "https://yoga-write-code.ghost.io/";
-    script.dataset.locale = "en";
-    container.appendChild(script);
-  }, []);
-
   return (
-    <div
-      ref={containerRef}
-      className="mx-auto w-full max-w-[440px]"
-      style={{ minHeight: 58 }}
-    />
+    <div className="mx-auto w-full max-w-[480px]">
+      <iframe
+        src="https://writebysachin.substack.com/embed"
+        title="Subscribe to the Yoga Write Code newsletter"
+        width="480"
+        height="320"
+        loading="lazy"
+        scrolling="no"
+        className="h-[320px] w-full rounded-xl border border-line bg-white"
+      />
+    </div>
   );
 }
