@@ -53,7 +53,6 @@ export async function proxy(request: NextRequest) {
 
   const APP_HOST = "app.yogawritecode.com";
   const MARKETING_HOST = "yogawritecode.com";
-  const MARKETING_HOSTS = [MARKETING_HOST, "www.yogawritecode.com"];
 
   // App subdomain serves the product only. Marketing pages (pricing, privacy,
   // terms, about, features, blog, …) always live on the main domain, so a
@@ -81,14 +80,11 @@ export async function proxy(request: NextRequest) {
     }
   }
 
-  // Marketing domains: send auth/dashboard routes to the app subdomain
-  if (MARKETING_HOSTS.includes(hostname)) {
-    if (pathname === "/login" || pathname === "/signup" || pathname.startsWith("/dashboard")) {
-      const url = request.nextUrl.clone();
-      url.hostname = APP_HOST;
-      return NextResponse.redirect(url);
-    }
-  }
+  // Both hosts serve the product. Checkout runs on the marketing domain, so
+  // /dashboard, /login and /signup must render there too — otherwise the
+  // post-payment redirect would bounce the customer to app.* and lose their
+  // session cookies, which are scoped to the host they signed in on.
+  // Marketing pages on app.* still redirect to the main domain above.
 
   // Optimistic auth guard: the JWT is already verified above, so this only
   // reads the token — no database call. Unauthenticated users are sent to
