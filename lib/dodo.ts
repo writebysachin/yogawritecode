@@ -55,6 +55,41 @@ export function normalizeCycle(value: unknown): BillingCycle {
 }
 
 /**
+ * Product ids behind the links above, used when the server creates a Checkout
+ * Session for the embedded (inline) checkout. Keep these in sync with
+ * DEFAULT_LINKS — a session and its link must point at the same product.
+ */
+export const DODO_PRODUCT_IDS: Record<PaidPlanId, string> = {
+  starter: "pdt_0NpdaJfvYRH4No4Adhd7F",
+  pro: "pdt_0Np8pi0UC8l26KKHxN9Pc",
+  scale: "pdt_0NpdcPj2kwmZyFUWgG2KH",
+};
+
+/**
+ * Yearly products are optional. Until a dedicated yearly product id is
+ * configured, a yearly selection uses the monthly product and relies on
+ * `metadata_cycle` — the same behaviour as the payment-link fallback.
+ */
+const DODO_YEARLY_PRODUCT_IDS: Partial<Record<PaidPlanId, string | undefined>> = {
+  starter: process.env.DODO_STARTER_YEARLY_PRODUCT_ID,
+  pro: process.env.DODO_PRO_YEARLY_PRODUCT_ID,
+  scale: process.env.DODO_SCALE_YEARLY_PRODUCT_ID,
+};
+
+export function productIdFor(plan: PaidPlanId, cycle: BillingCycle): string {
+  if (cycle === "yearly") {
+    const yearly = DODO_YEARLY_PRODUCT_IDS[plan]?.trim();
+    if (yearly) return yearly;
+  }
+  return DODO_PRODUCT_IDS[plan];
+}
+
+/** Matches the environment the secret key belongs to. Defaults to live. */
+export function dodoMode(): "test" | "live" {
+  return process.env.DODO_ENVIRONMENT?.trim().toLowerCase() === "test" ? "test" : "live";
+}
+
+/**
  * Builds a Dodo checkout link for a plan + cycle, prefilled with the
  * signed-in user's email and id. The webhook prefers
  * `metadata_app_user_id` over email so a typo or case difference at

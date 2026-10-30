@@ -9,6 +9,7 @@ import {
   normalizePlan,
   type PaidPlanId,
 } from "@/lib/dodo";
+import { CheckoutButton, CheckoutFrame, CheckoutProvider } from "@/components/marketing/checkout-flow";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = {
@@ -53,6 +54,7 @@ export default async function CheckoutPage({
 
   return (
     <main className="bg-canvas">
+      <CheckoutProvider plan={plan} cycle={cycle}>
       <div className="mx-auto max-w-[960px] px-5 py-12 sm:px-8 sm:py-16">
         <p className="text-xs font-medium uppercase tracking-[0.14em] text-ink-muted">
           <Link href="/pricing" className="hover:text-ink">
@@ -179,13 +181,10 @@ export default async function CheckoutPage({
 
             <div className="mt-6">
               {authed ? (
-                <a
-                  href={dodoHref ?? "#"}
-                  className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-field bg-brand px-4 text-sm font-medium text-white transition-colors hover:bg-brand-hover"
-                >
-                  Continue to secure checkout
+                <CheckoutButton>
+                  Pay securely on this page
                   <ArrowRight size={16} />
-                </a>
+                </CheckoutButton>
               ) : (
                 <Link
                   href={signupHref}
@@ -206,6 +205,15 @@ export default async function CheckoutPage({
                   </Link>
                 </p>
               ) : null}
+              <noscript>
+                <a
+                  href={dodoHref ?? "#"}
+                  className="mt-3 inline-flex h-11 w-full items-center justify-center gap-2 rounded-field bg-brand px-4 text-sm font-medium text-white"
+                >
+                  Continue on the hosted checkout page
+                  <ArrowRight size={16} />
+                </a>
+              </noscript>
             </div>
 
             <p className="mt-4 flex items-start gap-2 text-xs leading-5 text-ink-muted">
@@ -215,6 +223,10 @@ export default async function CheckoutPage({
             </p>
           </aside>
         </div>
+
+        {authed ? (
+          <CheckoutFrame planName={PLAN_NAMES[plan]} price={price} unit={unit} />
+        ) : null}
 
         <div className="mt-8 flex flex-wrap items-center justify-between gap-3 border-t border-line pt-5 text-xs text-ink-muted">
           <p>
@@ -237,6 +249,7 @@ export default async function CheckoutPage({
           </Link>
         </div>
       </div>
+      </CheckoutProvider>
     </main>
   );
 }
