@@ -3,12 +3,14 @@
 import Script from "next/script";
 import { Suspense, useEffect, useSyncExternalStore } from "react";
 import { AnalyticsConsentBanner } from "@/components/analytics/consent-banner";
+import { GaPageView, GoogleTag } from "@/components/analytics/google-tag";
 import { PostHogPageView } from "@/components/analytics/posthog-pageview";
 import { initPostHog } from "@/lib/posthog";
 import {
   clarityExcludedPaths,
   clarityMaskedSelectors,
   clarityProjectId,
+  gaMeasurementId,
   getConsentServerSnapshot,
   getConsentSnapshot,
   getHydratedSnapshot,
@@ -36,9 +38,6 @@ function useHydrated(): boolean {
  * when JavaScript is off, and with JavaScript off nobody can consent, so serving
  * it would fire the container's tags and drop its cookies for every such
  * visitor regardless of what they chose.
- *
- * GA4 is fired by the container rather than by gtag.js here, so pageviews are
- * counted once.
  */
 function GoogleTagManager({ containerId }: { containerId: string }) {
   return (
@@ -78,9 +77,13 @@ function ClarityTags({ projectId }: { projectId: string }) {
 }
 
 /**
- * Loads Google Tag Manager and Microsoft Clarity, but only after the visitor
- * accepts. Until then no third-party script is requested and no analytics or
- * session-recording cookie exists.
+ * Loads Google Tag Manager, the GA4 measurement stream, and Microsoft Clarity,
+ * but only after the visitor accepts. Until then no third-party script is
+ * requested and no analytics or session-recording cookie exists.
+ *
+ * GA4 is loaded directly with gtag.js while the GTM container has no GA4 tag.
+ * Once the container reports GA4 itself, `gaMeasurementId` resolves to null
+ * (NEXT_PUBLIC_GTM_FIRES_GA4=true) and only the container runs.
  */
 export function TagManager() {
   const decision: ConsentDecision | null = useSyncExternalStore(
@@ -103,9 +106,11 @@ export function TagManager() {
   return (
     <>
       {granted && gtmContainerId ? <GoogleTagManager containerId={gtmContainerId} /> : null}
+      {granted && gaMeasurementId ? <GoogleTag measurementId={gaMeasurementId} /> : null}
       {granted && clarityProjectId ? <ClarityTags projectId={clarityProjectId} /> : null}
       <Suspense fallback={null}>
         <PostHogPageView />
+        {granted && gaMeasurementId ? <GaPageView /> : null}
       </Suspense>
       {decision === null ? (
         <AnalyticsConsentBanner

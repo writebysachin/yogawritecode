@@ -15,16 +15,30 @@ const configuredContainerId: string =
 
 /**
  * Microsoft Clarity project ID. Set to an empty value to disable Clarity.
- *
- * GA4 is deliberately NOT loaded from here: the GTM container already fires the
- * GA4 tag, and loading gtag.js as well would count every pageview twice. Consent
- * Mode defaults for that GA4 tag are configured inside the container.
  */
 const configuredClarityId: string =
   process.env.NEXT_PUBLIC_CLARITY_PROJECT_ID ?? "yo9d18nwgq";
 
+/**
+ * GA4 measurement ID of the "Web" data stream, loaded through gtag.js by
+ * <GoogleTag /> once the visitor accepts. Set to an empty value to disable it.
+ *
+ * gtag.js is only loaded while the GTM container is *not* reporting GA4
+ * itself. The moment the container gets a GA4 configuration tag, set
+ * NEXT_PUBLIC_GTM_FIRES_GA4=true so both loaders never run at once — that
+ * would count every pageview twice.
+ */
+const configuredGaMeasurementId: string =
+  process.env.NEXT_PUBLIC_GA_MEASUREMENT_ID ?? "G-HE58ZZSJPW";
+
+const gtmFiresGa4: boolean =
+  (process.env.NEXT_PUBLIC_GTM_FIRES_GA4 ?? "false").trim().toLowerCase() === "true";
+
 export const gtmContainerId: string | null = configuredContainerId.trim() || null;
 export const clarityProjectId: string | null = configuredClarityId.trim() || null;
+export const gaMeasurementId: string | null = gtmFiresGa4
+  ? null
+  : configuredGaMeasurementId.trim() || null;
 
 /**
  * Dashboard routes are excluded from Clarity recordings: they hold customer
