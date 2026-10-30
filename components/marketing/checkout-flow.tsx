@@ -74,10 +74,12 @@ function useCheckout(): CheckoutContextValue {
 export function CheckoutProvider({
   plan,
   cycle,
+  autoStart = false,
   children,
 }: {
   plan: PaidPlanId;
   cycle: BillingCycle;
+  autoStart?: boolean;
   children: React.ReactNode;
 }) {
   const [status, setStatus] = useState<Status>("idle");
@@ -182,6 +184,14 @@ export function CheckoutProvider({
       current === "creating" || current === "redirecting" ? current : "creating",
     );
   }, []);
+
+  // Open the embedded form as soon as the page is ready, so paying is one less
+  // click. Skipped when the customer just came back from cancelling.
+  useEffect(() => {
+    if (!autoStart) return;
+    const timer = window.setTimeout(() => start(), 150);
+    return () => window.clearTimeout(timer);
+  }, [autoStart, start]);
 
   const reset = useCallback(() => {
     void import("dodopayments-checkout")

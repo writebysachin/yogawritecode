@@ -87,7 +87,7 @@ export async function POST(request: Request) {
       customer: { email: user.email, ...(name ? { name } : {}) },
       metadata: { app_user_id: user.id, plan, cycle },
       return_url: DODO_SUCCESS_URL,
-      cancel_url: new URL("/checkout", request.url).toString(),
+      cancel_url: new URL("/checkout?canceled=1", request.url).toString(),
       customization: {
         theme: "light",
         show_order_details: true,

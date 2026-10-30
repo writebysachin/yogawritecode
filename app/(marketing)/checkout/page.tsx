@@ -35,11 +35,12 @@ const PLANS: PaidPlanId[] = ["starter", "pro", "scale"];
 export default async function CheckoutPage({
   searchParams,
 }: {
-  searchParams: Promise<{ plan?: string; cycle?: string }>;
+  searchParams: Promise<{ plan?: string; cycle?: string; canceled?: string }>;
 }) {
   const params = (await searchParams) ?? {};
   const plan = normalizePlan(params.plan);
   const cycle = normalizeCycle(params.cycle);
+  const canceled = params.canceled === "1";
 
   const supabase = await createSupabaseServerClient();
   const { data: userData } = await supabase.auth.getUser();
@@ -54,7 +55,7 @@ export default async function CheckoutPage({
 
   return (
     <main className="bg-canvas">
-      <CheckoutProvider plan={plan} cycle={cycle}>
+      <CheckoutProvider plan={plan} cycle={cycle} autoStart={authed && !canceled}>
       <div className="mx-auto max-w-[960px] px-5 py-12 sm:px-8 sm:py-16">
         <p className="text-xs font-medium uppercase tracking-[0.14em] text-ink-muted">
           <Link href="/pricing" className="hover:text-ink">

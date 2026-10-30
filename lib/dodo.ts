@@ -1,4 +1,12 @@
-export const DODO_SUCCESS_URL = "https://app.yogawritecode.com/dashboard/payment-success";
+/**
+ * Where Dodo sends the customer after payment. Uses the canonical site URL so
+ * the landing page stays on the same domain the checkout started on
+ * (yogawritecode.com), rather than the app.* alias.
+ */
+export const DODO_SUCCESS_URL = new URL(
+  "/dashboard/payment-success",
+  process.env.NEXT_PUBLIC_SITE_URL ?? "https://yogawritecode.com",
+).toString();
 
 function withRedirect(base: string): string {
   const url = new URL(base);
