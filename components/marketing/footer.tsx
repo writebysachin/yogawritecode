@@ -33,6 +33,8 @@ const footerLinks = [
       { label: "Blog", href: "/resources/blog" },
       { label: "FAQs", href: "/resources/faqs" },
       { label: "Pricing", href: "/pricing" },
+      { label: "About", href: "/about" },
+      { label: "Contact", href: "/contact" },
     ],
   },
   {
@@ -41,12 +43,6 @@ const footerLinks = [
       { label: "Terms", href: "/terms" },
       { label: "Privacy", href: "/privacy" },
       { label: "Refund Policy", href: "/refund-policy" },
-    ],
-  },
-  {
-    title: "Company",
-    links: [
-      { label: "About", href: "/about" },
     ],
   },
 ] as const;

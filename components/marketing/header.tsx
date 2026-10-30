@@ -16,9 +16,7 @@ const navigation: NavItem[] = [
   { label: "Solutions", href: "/solutions" },
   { label: "Compare", href: "/compare" },
   { label: "Pricing", href: "/pricing" },
-  { label: "About", href: "/about" },
-  { label: "Blog", href: "/resources/blog" },
-  { label: "FAQs", href: "/resources/faqs" },
+  { label: "Resources", href: "/resources/blog" },
 ];
 
 const megaMenu: Record<string, NavItem[]> = {
@@ -34,6 +32,12 @@ const megaMenu: Record<string, NavItem[]> = {
     { label: "vs SurferSEO", href: "/compare/surfer-seo" },
     { label: "vs Frase", href: "/compare/frase" },
     { label: "vs Jasper", href: "/compare/jasper" },
+  ],
+  Resources: [
+    { label: "Blog", href: "/resources/blog" },
+    { label: "FAQs", href: "/resources/faqs" },
+    { label: "About", href: "/about" },
+    { label: "Contact", href: "/contact" },
   ],
 };
 
@@ -55,13 +59,19 @@ export function SiteHeader() {
                   className="relative"
                   onMouseEnter={() => hasChildren && setOpenMega(item.label)}
                   onMouseLeave={() => setOpenMega(null)}
+                  onFocus={() => hasChildren && setOpenMega(item.label)}
+                  onBlur={(event) => {
+                    if (!event.currentTarget.contains(event.relatedTarget as Node | null)) {
+                      setOpenMega(null);
+                    }
+                  }}
                 >
                   <Link
                     href={item.href}
                     className="flex items-center gap-1 rounded-control px-3 py-2 text-sm font-medium text-ink-secondary transition-colors hover:text-ink"
                   >
                     {item.label}
-                    {hasChildren ? <ChevronDown size={14} /> : null}
+                    {hasChildren ? <ChevronDown size={14} aria-hidden="true" /> : null}
                   </Link>
                   {hasChildren && openMega === item.label ? (
                     <div className="absolute left-0 top-full min-w-[200px] rounded-card border border-line bg-surface p-2 shadow-pop">
@@ -111,14 +121,30 @@ export function SiteHeader() {
         <div className="fixed inset-0 top-[68px] z-40 bg-ink/30 md:hidden" onClick={() => setMobileOpen(false)}>
           <nav className="fixed inset-x-0 top-[68px] z-50 border-b border-line bg-surface px-5 py-4 shadow-pop">
             {navigation.map((item) => (
-              <Link
-                key={item.label}
-                href={item.href}
-                onClick={() => setMobileOpen(false)}
-                className="block py-2.5 text-sm font-medium text-ink-secondary transition-colors hover:text-ink"
-              >
-                {item.label}
-              </Link>
+              <div key={item.label}>
+                <Link
+                  href={item.href}
+                  onClick={() => setMobileOpen(false)}
+                  className="block py-2.5 text-sm font-medium text-ink-secondary transition-colors hover:text-ink"
+                >
+                  {item.label}
+                </Link>
+                {megaMenu[item.label]?.length ? (
+                  <ul className="mb-1 ml-3 border-l border-line pl-3">
+                    {megaMenu[item.label]!.map((child) => (
+                      <li key={child.href}>
+                        <Link
+                          href={child.href}
+                          onClick={() => setMobileOpen(false)}
+                          className="block py-1.5 text-sm text-ink-muted transition-colors hover:text-ink"
+                        >
+                          {child.label}
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                ) : null}
+              </div>
             ))}
             <div className="mt-4 flex gap-2.5 border-t border-line pt-4">
               <Link
