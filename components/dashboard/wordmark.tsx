@@ -32,7 +32,9 @@ export function Wordmark({
           fill="white"
         />
       </svg>
-      <span className="font-heading text-[15px] font-bold tracking-tight text-ink">Content OS</span>
+      <span className="font-heading text-[15px] font-extrabold uppercase tracking-tight text-ink">
+        YWC
+      </span>
     </Link>
   );
 }

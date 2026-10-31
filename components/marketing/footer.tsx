@@ -51,9 +51,16 @@ export function SiteFooter() {
   return (
     <footer className="border-t border-line bg-surface px-5 py-12 font-sans sm:px-8">
       <div className="mx-auto flex max-w-[1160px] flex-col gap-8 sm:flex-row sm:items-start sm:justify-between">
-        <div className="flex items-center gap-3">
-          <MarketingBrand />
-          <p className="text-sm text-ink-secondary">Write at flow, growth with clarity.</p>
+        <div className="flex flex-col gap-3">
+          <div className="flex items-center gap-2.5">
+            <MarketingBrand />
+            <span className="font-heading text-lg font-extrabold uppercase tracking-tight text-ink">
+              YWC
+            </span>
+          </div>
+          <p className="max-w-xs text-sm text-ink-secondary">
+            Yoga Write Code. Write at flow, growth with clarity.
+          </p>
         </div>
         <nav aria-label="Footer navigation" className="flex flex-wrap gap-x-12 gap-y-6 text-sm">
           {footerLinks.map((group) => (
@@ -77,26 +84,42 @@ export function SiteFooter() {
       <div className="mx-auto mt-10 max-w-[1160px] rounded-surface border border-line bg-surface-subtle px-6 py-6 sm:px-8">
         <FooterSubscribe />
       </div>
-      <div className="mx-auto mt-10 flex max-w-[1160px] flex-col gap-2 border-t border-line pt-5 text-xs text-ink-muted sm:flex-row sm:justify-between">
-        <span>&copy; 2026 Yoga Write Code. All rights reserved.</span>
-        <div className="flex items-center gap-4">
-          <a
-            href="https://www.linkedin.com/company/yogawritecode"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="transition-colors hover:text-ink"
-          >
-            LinkedIn
-          </a>
-          <a
-            href="https://x.com/yogawritecode"
-            target="_blank"
-            rel="noopener noreferrer"
-            className="transition-colors hover:text-ink"
-          >
-            X (Twitter)
-          </a>
+      <div className="mx-auto mt-10 max-w-[1160px] border-t border-line pt-6">
+        <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
+          <div className="flex items-baseline gap-2.5">
+            <span className="font-heading text-xl font-extrabold uppercase tracking-tight text-ink">
+              YWC
+            </span>
+            <span className="text-xs font-medium text-ink-muted">Yoga Write Code</span>
+          </div>
+          <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-ink-secondary">
+            <a
+              href="https://www.linkedin.com/company/yogawritecode"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="transition-colors hover:text-ink"
+            >
+              LinkedIn
+            </a>
+            <a
+              href="https://x.com/yogawritecode"
+              target="_blank"
+              rel="noopener noreferrer"
+              className="transition-colors hover:text-ink"
+            >
+              X (Twitter)
+            </a>
+            <Link href="/terms" className="transition-colors hover:text-ink">
+              Terms
+            </Link>
+            <Link href="/privacy" className="transition-colors hover:text-ink">
+              Privacy
+            </Link>
+          </div>
         </div>
+        <p className="mt-4 text-xs text-ink-muted">
+          &copy; 2026 Yoga Write Code. All rights reserved. Made for writers who flow.
+        </p>
       </div>
     </footer>
   );
