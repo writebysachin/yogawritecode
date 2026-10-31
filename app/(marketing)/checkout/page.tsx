@@ -51,7 +51,9 @@ export default async function CheckoutPage({
   const price = cycle === "yearly" ? PLAN_PRICES[plan].yearly : PLAN_PRICES[plan].monthly;
   const unit = cycle === "yearly" ? "/ year" : "/ month";
   const dodoHref = authed ? buildDodoPlanLink(plan, email, userId, cycle) : null;
-  const signupHref = `/signup?plan=${plan}&cycle=${cycle}`;
+  const checkoutPath = `/checkout?plan=${plan}&cycle=${cycle}`;
+  const signupHref = `/signup?plan=${plan}&cycle=${cycle}&next=${encodeURIComponent(checkoutPath)}`;
+  const loginHref = `/login?plan=${plan}&cycle=${cycle}&next=${encodeURIComponent(checkoutPath)}`;
 
   return (
     <main className="bg-canvas">
@@ -199,7 +201,7 @@ export default async function CheckoutPage({
                 <p className="mt-2 text-center text-xs text-ink-muted">
                   Already have an account?{" "}
                   <Link
-                    href={`/login?plan=${plan}&cycle=${cycle}`}
+                    href={loginHref}
                     className="font-medium text-ink underline underline-offset-4"
                   >
                     Log in

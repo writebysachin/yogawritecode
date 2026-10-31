@@ -10,11 +10,15 @@ export async function login(formData: FormData) {
   const supabase = await createSupabaseServerClient();
   const email = String(formData.get("email") ?? "");
   const password = String(formData.get("password") ?? "");
-  const next = String(formData.get("next") ?? "");
+  const requestedNext = String(formData.get("next") ?? "");
+  const next =
+    requestedNext.startsWith("/") && !requestedNext.startsWith("//") ? requestedNext : "";
   const { error } = await supabase.auth.signInWithPassword({ email, password });
   if (error) {
     console.error("[login]", error.message);
-    redirect("/login?error=" + encodeURIComponent(error.message));
+    const params = new URLSearchParams({ error: error.message });
+    if (next) params.set("next", next);
+    redirect(`/login?${params.toString()}`);
   }
   revalidatePath("/dashboard", "layout");
   if (next) redirect(next);
@@ -49,7 +53,9 @@ export async function signup(formData: FormData) {
   const password = String(formData.get("password") ?? "");
   const plan = String(formData.get("plan") ?? "");
   const cycle = String(formData.get("cycle") ?? "monthly");
-  const next = String(formData.get("next") ?? "");
+  const requestedNext = String(formData.get("next") ?? "");
+  const next =
+    requestedNext.startsWith("/") && !requestedNext.startsWith("//") ? requestedNext : "";
   // Plan flow: pricing first (with welcome banner), pricing links to
   // checkout, checkout routes to Dodo or back here. Free flow: onboarding
   // welcome instead of a bare dashboard.
@@ -58,9 +64,16 @@ export async function signup(formData: FormData) {
     (plan
       ? `/dashboard/pricing?plan=${plan}&cycle=${cycle}&new=1`
       : "/onboarding?welcome=1");
+  const errorHref = (message: string) => {
+    const params = new URLSearchParams({ error: message });
+    if (plan) params.set("plan", plan);
+    if (cycle) params.set("cycle", cycle);
+    if (next) params.set("next", next);
+    return `/signup?${params.toString()}`;
+  };
 
   if (password.length < 6) {
-    redirect("/signup?error=" + encodeURIComponent("Password must be at least 6 characters."));
+    redirect(errorHref("Password must be at least 6 characters."));
   }
 
   const { data, error } = await supabase.auth.signUp({
@@ -70,20 +83,25 @@ export async function signup(formData: FormData) {
       // Where Supabase sends the confirmation link. /auth/confirm exchanges the
       // PKCE code for a session and sends the welcome email. This URL must also
       // be allowlisted under Supabase -> Authentication -> URL Configuration.
-      emailRedirectTo: `${origin}/auth/confirm`,
+      emailRedirectTo: `${origin}/auth/confirm?next=${encodeURIComponent(afterAuth)}`,
     },
   });
 
   if (error) {
     console.error("[signup]", error.message);
-    redirect("/signup?error=" + encodeURIComponent(error.message));
+    redirect(errorHref(error.message));
   }
 
   // No session means the project requires email confirmation, so the account
   // cannot be used until the link is opened. Redirecting to /dashboard here
   // would bounce straight back to /login with no explanation.
   if (!data.session) {
-    redirect(plan ? `/check-email?plan=${plan}&cycle=${cycle}` : "/check-email");
+    const params = new URLSearchParams();
+    if (plan) params.set("plan", plan);
+    if (cycle) params.set("cycle", cycle);
+    if (next) params.set("next", next);
+    const query = params.toString();
+    redirect(query ? `/check-email?${query}` : "/check-email");
   }
 
   // Confirmation is disabled in Supabase, so the account is usable already.

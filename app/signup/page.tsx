@@ -21,9 +21,15 @@ export default async function SignupPage({
 }) {
   const { error, plan, cycle, next } = await searchParams;
   const planLabel = plan ? (PLAN_LABEL[plan] ?? plan) : null;
-  const loginHref = plan ? `/login?plan=${plan}&cycle=${cycle ?? "monthly"}` : "/login";
   const nextParam =
     next ?? (plan ? `/dashboard/pricing?plan=${plan}&cycle=${cycle ?? "monthly"}&new=1` : undefined);
+  const loginParams = new URLSearchParams();
+  if (plan) {
+    loginParams.set("plan", plan);
+    loginParams.set("cycle", cycle ?? "monthly");
+  }
+  if (nextParam) loginParams.set("next", nextParam);
+  const loginHref = loginParams.size ? `/login?${loginParams.toString()}` : "/login";
 
   return (
     <AuthShell>
