@@ -52,7 +52,7 @@ export function FooterWordmark() {
       <Link href="/" aria-label="Yoga Write Code home" className="block">
         <span
           aria-hidden="true"
-          className="flex w-full items-baseline justify-between whitespace-nowrap font-heading text-[clamp(2.25rem,11vw,10rem)] font-extrabold uppercase leading-[0.9] tracking-[-0.05em] text-ink"
+          className="flex w-full items-baseline justify-between whitespace-nowrap font-heading text-[clamp(1.6rem,8vw,7rem)] font-extrabold uppercase leading-[0.9] tracking-[-0.06em] text-ink"
         >
           {letterGroups.map((letters, wordIndex) => (
             <span key={wordIndex} className="inline-flex">
