@@ -27,7 +27,7 @@ export default async function CheckEmailPage({
       <p className="mt-2 text-sm text-ink-secondary">
         We sent a confirmation link to the address you signed up with. Open it to activate your
         account, then come back and log in
-        {plan ? " to continue to checkout" : ""}.
+        {plan ? " to start your free trial" : " to set up your workspace"}.
       </p>
 
       <div className="mt-6 rounded-field border border-line bg-surface-subtle px-4 py-3 text-sm text-ink-secondary">

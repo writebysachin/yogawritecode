@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { AuthShell } from "@/components/auth/auth-shell";
 import { GoogleAuthButton } from "@/components/auth/google-auth-button";
 import { Field, FormError, OrDivider, PrimaryButton, inputClass } from "@/components/form";
 import { login } from "@/lib/auth/actions";
 import { friendlyAuthError } from "@/lib/auth/errors";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = { title: "Log in" };
 
@@ -22,7 +24,21 @@ export default async function LoginPage({
   const { error, plan, cycle, next } = await searchParams;
   const planLabel = plan ? (PLAN_LABEL[plan] ?? plan) : null;
   const nextParam =
-    next ?? (plan ? `/dashboard/pricing?plan=${plan}&cycle=${cycle ?? "monthly"}&new=1` : undefined);
+    next ?? (plan ? `/onboarding?plan=${plan}&cycle=${cycle ?? "monthly"}` : undefined);
+
+  // Already signed in? Skip the form. This also keeps pricing CTAs working
+  // for existing customers (they land on onboarding, which forwards them to
+  // the dashboard when the survey is already complete).
+  const supabase = await createSupabaseServerClient();
+  const { data: userData } = await supabase.auth.getUser();
+  if (userData.user) {
+    const safeNext =
+      nextParam && nextParam.startsWith("/") && !nextParam.startsWith("//")
+        ? nextParam
+        : "/onboarding";
+    redirect(safeNext);
+  }
+
   const signupParams = new URLSearchParams();
   if (plan) {
     signupParams.set("plan", plan);

@@ -8,7 +8,11 @@ export async function GET(request: Request) {
 async function handleAuthCallback(request: Request) {
   const requestUrl = new URL(request.url);
   const code = requestUrl.searchParams.get("code");
-  const next = requestUrl.searchParams.get("next") ?? "/dashboard";
+  const requestedNext = requestUrl.searchParams.get("next") ?? "/dashboard";
+  const next =
+    requestedNext.startsWith("/") && !requestedNext.startsWith("//")
+      ? requestedNext
+      : "/dashboard";
 
   // Google / Supabase redirects back here with ?error=access_denied when the
   // OAuth consent screen blocks the account (e.g. app still in "Testing" mode
@@ -30,25 +34,6 @@ async function handleAuthCallback(request: Request) {
   if (code) {
     const supabase = await createSupabaseServerClient();
     await supabase.auth.exchangeCodeForSession(code);
-
-    // New Google users choose a plan first: buying is step one of onboarding.
-    // A plan-specific `next` (e.g. /dashboard/pricing?plan=pro) is always respected.
-    if (next === "/onboarding") {
-      const { data } = await supabase.auth.getUser();
-      if (data.user) {
-        const { data: profile } = await supabase
-          .from("profiles")
-          .select("created_at")
-          .eq("id", data.user.id)
-          .maybeSingle();
-        const createdAt = (profile as { created_at?: string } | null)?.created_at;
-        const isNew =
-          !createdAt || Date.now() - new Date(createdAt).getTime() < 5 * 60 * 1000;
-        if (isNew) {
-          return NextResponse.redirect(new URL("/dashboard/pricing?new=1", requestUrl.origin));
-        }
-      }
-    }
   }
 
   return NextResponse.redirect(new URL(next, requestUrl.origin));

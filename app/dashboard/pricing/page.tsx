@@ -3,6 +3,7 @@ import Link from "next/link";
 import { PageHeader } from "@/components/page-header";
 import { GetCredits } from "@/components/dashboard/get-credits";
 import { PricingPlans } from "@/components/pricing-plans";
+import { getPlanStatus } from "@/lib/plan";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = {
@@ -32,7 +33,7 @@ export default async function PricingPage({
     ai_credits_balance?: number | null;
     card_bonus_claimed?: boolean | null;
   } | null;
-  const isPro = profileRow?.subscription_status === "active" || profileRow?.subscription_status === "trialing";
+  const isPro = getPlanStatus(userData.user, 0, profileRow?.subscription_status).isPro;
   const highlightPlan = plan === "starter" || plan === "pro" || plan === "scale" ? plan : undefined;
   const initialCycle = cycle === "yearly" ? ("yearly" as const) : ("monthly" as const);
   const credits = profileRow?.ai_credits_balance ?? 50;

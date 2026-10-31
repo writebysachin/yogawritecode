@@ -28,9 +28,10 @@ export type PlanStatus = {
 /**
  * Single source of truth for the user's plan.
  *
- * Pro access comes from `profiles.subscription_status`, which the Dodo
- * webhook sets to "active" after payment. Never read plan state from
- * `user_metadata` — nothing writes it there, so paid users would look free.
+ * Paid access comes from `profiles.subscription_status`, which the Dodo
+ * webhook sets to "active" after payment. The no-card trial chosen during
+ * onboarding sets `trial_end` in auth metadata, so a trial is Pro access
+ * until that date passes. A real subscription always wins over a trial.
  */
 export function getPlanStatus(
   user: User | null,

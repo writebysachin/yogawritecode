@@ -21,22 +21,15 @@ export async function login(formData: FormData) {
     redirect(`/login?${params.toString()}`);
   }
   revalidatePath("/dashboard", "layout");
+  // An explicit `next` always wins (checkout, a shared link, etc.).
   if (next) redirect(next);
 
-  // Returning users go straight to the dashboard. Brand-new accounts
-  // (created in the last 5 minutes) see pricing first, then checkout,
-  // then the onboarding welcome — mirroring the Google OAuth flow.
+  // Everyone else finishes the one-time survey unless they already have.
+  // This covers both brand-new accounts and older accounts that signed up
+  // before onboarding existed.
   const { data } = await supabase.auth.getUser();
-  if (data.user) {
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("created_at")
-      .eq("id", data.user.id)
-      .maybeSingle();
-    const createdAt = (profile as { created_at?: string } | null)?.created_at;
-    const isNew =
-      !createdAt || Date.now() - new Date(createdAt).getTime() < 5 * 60 * 1000;
-    if (isNew) redirect("/dashboard/pricing?new=1");
+  if (data.user && !data.user.user_metadata?.onboarding_completed_at) {
+    redirect("/onboarding");
   }
   redirect("/dashboard");
 }
@@ -56,14 +49,12 @@ export async function signup(formData: FormData) {
   const requestedNext = String(formData.get("next") ?? "");
   const next =
     requestedNext.startsWith("/") && !requestedNext.startsWith("//") ? requestedNext : "";
-  // Plan flow: pricing first (with welcome banner), pricing links to
-  // checkout, checkout routes to Dodo or back here. Free flow: onboarding
-  // welcome instead of a bare dashboard.
+  // Every new account goes through the quick survey + plan choice. The
+  // selected plan is carried along so the plan step starts pre-selected.
+  // An explicit `next` (e.g. returning to checkout) still wins.
   const afterAuth =
     next ||
-    (plan
-      ? `/dashboard/pricing?plan=${plan}&cycle=${cycle}&new=1`
-      : "/onboarding?welcome=1");
+    (plan ? `/onboarding?plan=${plan}&cycle=${cycle}` : "/onboarding");
   const errorHref = (message: string) => {
     const params = new URLSearchParams({ error: message });
     if (plan) params.set("plan", plan);
@@ -128,8 +119,11 @@ export async function signInWithGoogle(formData?: FormData) {
     process.env.NEXT_PUBLIC_SITE_URL ??
     "http://localhost:3000";
 
+  const requestedNext = formData ? String(formData.get("next") ?? "") : "";
   const next =
-    (formData ? String(formData.get("next") ?? "") : "") || "/onboarding";
+    requestedNext.startsWith("/") && !requestedNext.startsWith("//")
+      ? requestedNext
+      : "/onboarding";
 
   const { data, error } = await supabase.auth.signInWithOAuth({
     provider: "google",

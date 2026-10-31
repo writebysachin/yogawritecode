@@ -17,7 +17,7 @@ export function PlanBanner({ planStatus }: { planStatus: PlanStatus }) {
             </p>
           </div>
           <Link
-            href="/pricing"
+            href="/dashboard/pricing"
             className="rounded-control bg-brand px-4 py-2 text-xs font-semibold text-white transition hover:bg-brand-hover"
           >
             Upgrade now
@@ -33,14 +33,14 @@ export function PlanBanner({ planStatus }: { planStatus: PlanStatus }) {
         <div>
           <p className="text-sm font-semibold text-ink">Free plan</p>
           <p className="mt-0.5 text-xs text-ink-secondary">
-            50 credits · No card required · Starter $9 / Pro $19 / Scale $40 for more.
+            50 credits · No card required · Upgrade anytime for more projects and exports.
           </p>
         </div>
         <Link
-          href="/pricing"
+          href="/dashboard/pricing"
           className="rounded-control bg-brand px-4 py-2 text-xs font-semibold text-white transition hover:bg-brand-hover"
         >
-          Start 7-day free trial
+          See plans
         </Link>
       </div>
     </div>

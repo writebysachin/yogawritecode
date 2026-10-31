@@ -29,22 +29,16 @@ export default function PaymentSuccessPage() {
           Payment Successful!
         </h1>
         <p className="mt-2 text-sm leading-6 text-ink-secondary">
-          Thank you for upgrading to YWC Pro. Your account is being activated.
-          Next up: a quick welcome tour to set up your workspace.
+          Thank you for upgrading. Your account is being activated — you can head straight to your
+          dashboard.
         </p>
 
         <div className="mt-6 flex flex-col gap-2.5">
           <Link
-            href="/onboarding?welcome=1"
+            href="/dashboard"
             className="inline-flex h-10 items-center justify-center rounded-field bg-brand px-4 text-sm font-medium text-white transition-colors hover:bg-brand-hover"
           >
-            Continue to welcome tour
-          </Link>
-          <Link
-            href="/dashboard"
-            className="inline-flex h-10 items-center justify-center rounded-field border border-line px-4 text-sm font-medium text-ink-secondary transition-colors hover:text-ink"
-          >
-            Skip to dashboard
+            Continue to dashboard
           </Link>
         </div>
       </div>

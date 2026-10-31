@@ -6,7 +6,7 @@ import type { BillingCycle } from "@/lib/dodo";
 
 const FREE_FEATURES = [
   { label: "50 AI credits, no card required", included: true },
-  { label: "1 active project", included: true },
+  { label: "2 active projects", included: true },
   { label: "Full 5-step workflow", included: true },
   { label: "View-only exports", included: false },
 ] as const;
@@ -58,6 +58,7 @@ export function PricingPlans({
   highlightPlan,
   hideFree,
   initialCycle,
+  mode = "checkout",
 }: {
   isPro: boolean;
   email?: string;
@@ -65,13 +66,22 @@ export function PricingPlans({
   highlightPlan?: string;
   hideFree?: boolean;
   initialCycle?: BillingCycle;
+  mode?: "checkout" | "marketing";
 }) {
   const [cycle, setCycle] = useState<BillingCycle>(initialCycle ?? "monthly");
 
-  // All selections land on the internal checkout page (/checkout), which
-  // shows the order summary and then routes authed users to Dodo or new
-  // users through signup (so the webhook can match payment to account).
-  const checkoutHref = (plan: string) => `/checkout?plan=${plan}&cycle=${cycle}`;
+  // Marketing traffic logs in (or signs up) first and picks a plan during
+  // onboarding — no card is collected there. In-product upgrades still go to
+  // the internal checkout, which starts the Dodo payment flow.
+  const planHref = (plan: string) =>
+    mode === "marketing"
+      ? `/login?plan=${plan}&cycle=${cycle}`
+      : `/checkout?plan=${plan}&cycle=${cycle}`;
+  const freeHref = mode === "marketing" ? "/login" : "/signup";
+  const selectLabel = (plan: string) =>
+    mode === "marketing" ? "Get started" : `Select ${plan}`;
+  const trialCopy =
+    mode === "marketing" ? "7-day free trial · no card" : "7-day free trial · card required";
 
   const prices = {
     starter: cycle === "yearly" ? "$86" : "$9",
@@ -132,7 +142,7 @@ export function PricingPlans({
                 </button>
               ) : (
                 <a
-                  href="/signup"
+                  href={freeHref}
                   className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-field bg-ink px-4 text-sm font-medium text-white transition-colors hover:bg-gray-800"
                 >
                   Start for free
@@ -154,14 +164,14 @@ export function PricingPlans({
             </span>
             <span className="text-sm text-ink-muted">{unit}</span>
           </p>
-          <p className="mt-1 text-xs font-medium text-success">7-day free trial, no card</p>
+          <p className="mt-1 text-xs font-medium text-success">{trialCopy}</p>
           <FeatureList features={STARTER_FEATURES} />
           <div className="mt-8 pt-2">
             <a
-              href={checkoutHref("starter")}
+              href={planHref("starter")}
               className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-field border border-line px-4 text-sm font-medium text-ink transition-colors hover:border-ink"
             >
-              Select Starter
+              {selectLabel("Starter")}
               <ArrowRight size={16} />
             </a>
           </div>
@@ -181,7 +191,7 @@ export function PricingPlans({
             </span>
             <span className="text-sm text-ink-muted">{unit}</span>
           </p>
-          <p className="mt-1 text-xs font-medium text-success">Includes a 7-day free trial</p>
+          <p className="mt-1 text-xs font-medium text-success">{trialCopy}</p>
           <p className="mt-5 text-xs font-medium uppercase tracking-[0.14em] text-ink-muted">
             Everything in Starter, plus
           </p>
@@ -197,10 +207,10 @@ export function PricingPlans({
               </button>
             ) : (
               <a
-                href={checkoutHref("pro")}
+                href={planHref("pro")}
                 className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-field bg-brand px-4 text-sm font-medium text-white transition-colors hover:bg-brand-hover"
               >
-                Select Pro
+                {selectLabel("Pro")}
                 <ArrowRight size={16} />
               </a>
             )}
@@ -218,14 +228,14 @@ export function PricingPlans({
             </span>
             <span className="text-sm text-ink-muted">{unit}</span>
           </p>
-          <p className="mt-1 text-xs font-medium text-success">7-day free trial, no card</p>
+          <p className="mt-1 text-xs font-medium text-success">{trialCopy}</p>
           <FeatureList features={SCALE_FEATURES} />
           <div className="mt-8 pt-2">
             <a
-              href={checkoutHref("scale")}
+              href={planHref("scale")}
               className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-field border border-line px-4 text-sm font-medium text-ink transition-colors hover:border-ink"
             >
-              Select Scale
+              {selectLabel("Scale")}
               <ArrowRight size={16} />
             </a>
           </div>

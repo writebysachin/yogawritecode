@@ -22,7 +22,7 @@ export default async function SignupPage({
   const { error, plan, cycle, next } = await searchParams;
   const planLabel = plan ? (PLAN_LABEL[plan] ?? plan) : null;
   const nextParam =
-    next ?? (plan ? `/dashboard/pricing?plan=${plan}&cycle=${cycle ?? "monthly"}&new=1` : undefined);
+    next ?? (plan ? `/onboarding?plan=${plan}&cycle=${cycle ?? "monthly"}` : "/onboarding");
   const loginParams = new URLSearchParams();
   if (plan) {
     loginParams.set("plan", plan);

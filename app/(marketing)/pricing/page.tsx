@@ -21,17 +21,17 @@ export default function PricingPage() {
             Start free. Upgrade when your pipeline pays for itself. Cancel anytime.
           </p>
           <p className="mt-3 max-w-xl text-sm text-ink-muted">
-            Free includes 50 credits with no credit card. Paid trials run 7 days with no charge.
-            Referrals earn 1 free month each (capped at 3 per account); adding a card adds +100
-            bonus credits.
+            Free includes 50 credits with no credit card. Every paid plan starts with a 7-day free
+            trial — no card required. Log in to pick a plan and set up your workspace.
           </p>
 
           <div className="mt-10">
-            <PricingPlans isPro={false} />
+            <PricingPlans isPro={false} mode="marketing" />
           </div>
 
           <p className="mt-8 text-xs text-ink-muted">
-            Secure payments powered by Dodo Payments. Cancel anytime. By subscribing you agree to our{" "}
+            Payments are handled securely by Dodo Payments when you upgrade. Cancel anytime. By
+            subscribing you agree to our{" "}
             <Link href="/terms" className="underline underline-offset-4 hover:text-ink">
               Terms
             </Link>
