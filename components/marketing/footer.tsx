@@ -53,12 +53,7 @@ export function SiteFooter() {
     <footer className="border-t border-line bg-surface px-5 py-12 font-sans sm:px-8">
       <div className="mx-auto flex max-w-[1160px] flex-col gap-8 sm:flex-row sm:items-start sm:justify-between">
         <div className="flex flex-col gap-3">
-          <div className="flex items-center gap-2.5">
-            <MarketingBrand />
-            <span className="font-heading text-lg font-extrabold uppercase tracking-tight text-ink">
-              YWC
-            </span>
-          </div>
+          <MarketingBrand />
           <p className="max-w-xs text-sm text-ink-secondary">
             Yoga Write Code. Write at flow, growth with clarity.
           </p>
