@@ -44,3 +44,28 @@
     @apply bg-brand-soft text-brand;
   }
 }
+
+@keyframes footer-letter-drop {
+  0% {
+    transform: translateY(-115%) rotate(-4deg);
+    opacity: 0;
+  }
+  55% {
+    transform: translateY(4%) rotate(0.5deg);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(0) rotate(0);
+    opacity: 1;
+  }
+}
+
+.footer-letter-drop {
+  animation: footer-letter-drop 0.75s cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .footer-letter-drop {
+    animation: none;
+  }
+}

@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { MarketingBrand } from "@/components/marketing/brand";
 import { FooterSubscribe } from "@/components/marketing/footer-subscribe";
+import { FooterWordmark } from "@/components/marketing/footer-wordmark";
 
 const footerLinks = [
   {
@@ -84,15 +85,11 @@ export function SiteFooter() {
       <div className="mx-auto mt-10 max-w-[1160px] rounded-surface border border-line bg-surface-subtle px-6 py-6 sm:px-8">
         <FooterSubscribe />
       </div>
-      <div className="mx-auto mt-10 max-w-[1160px] border-t border-line pt-6">
-        <div className="flex flex-col gap-5 sm:flex-row sm:items-center sm:justify-between">
-          <div className="flex items-baseline gap-2.5">
-            <span className="font-heading text-xl font-extrabold uppercase tracking-tight text-ink">
-              YWC
-            </span>
-            <span className="text-xs font-medium text-ink-muted">Yoga Write Code</span>
-          </div>
-          <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-xs text-ink-secondary">
+      <FooterWordmark />
+      <div className="mx-auto mt-6 max-w-[1160px] border-t border-line pt-4">
+        <div className="flex flex-col gap-3 text-xs text-ink-muted sm:flex-row sm:items-center sm:justify-between">
+          <p>&copy; 2026 Yoga Write Code. All rights reserved. Made for writers who flow.</p>
+          <div className="flex flex-wrap items-center gap-x-5 gap-y-2 text-ink-secondary">
             <a
               href="https://www.linkedin.com/company/yogawritecode"
               target="_blank"
@@ -117,9 +114,6 @@ export function SiteFooter() {
             </Link>
           </div>
         </div>
-        <p className="mt-4 text-xs text-ink-muted">
-          &copy; 2026 Yoga Write Code. All rights reserved. Made for writers who flow.
-        </p>
       </div>
     </footer>
   );
