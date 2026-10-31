@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import DodoPayments from "dodopayments";
 import { z } from "zod";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { getTrialState } from "@/lib/plan";
 import {
   DODO_SUCCESS_URL,
   buildDodoPlanLink,
@@ -76,6 +77,13 @@ export async function POST(request: Request) {
 
   const name = nameFromMetadata(user.user_metadata as Record<string, unknown> | undefined);
 
+  // The onboarding trial is the customer's trial. If they already have one on
+  // the account, Dodo must not grant a second free period on top of it —
+  // otherwise activating a plan months later would still cost nothing for a
+  // week. `trial_period_days: 0` overrides the 7 days set on the product.
+  const trial = getTrialState(user, false);
+  const alreadyTrialed = trial.endsAt !== null;
+
   try {
     const client = new DodoPayments({
       bearerToken: apiKey,
@@ -86,6 +94,7 @@ export async function POST(request: Request) {
       product_cart: [{ product_id: productIdFor(plan, cycle), quantity: 1 }],
       customer: { email: user.email, ...(name ? { name } : {}) },
       metadata: { app_user_id: user.id, plan, cycle },
+      subscription_data: alreadyTrialed ? { trial_period_days: 0 } : undefined,
       return_url: DODO_SUCCESS_URL,
       cancel_url: new URL("/checkout?canceled=1", request.url).toString(),
       customization: {

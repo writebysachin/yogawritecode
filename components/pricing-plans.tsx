@@ -59,6 +59,7 @@ export function PricingPlans({
   hideFree,
   initialCycle,
   mode = "checkout",
+  trialNote,
 }: {
   isPro: boolean;
   email?: string;
@@ -67,6 +68,8 @@ export function PricingPlans({
   hideFree?: boolean;
   initialCycle?: BillingCycle;
   mode?: "checkout" | "marketing";
+  /** Overrides the trial line, e.g. for a customer activating a used trial. */
+  trialNote?: string;
 }) {
   const [cycle, setCycle] = useState<BillingCycle>(initialCycle ?? "monthly");
 
@@ -81,7 +84,8 @@ export function PricingPlans({
   const selectLabel = (plan: string) =>
     mode === "marketing" ? "Get started" : `Select ${plan}`;
   const trialCopy =
-    mode === "marketing" ? "7-day free trial · no card" : "7-day free trial · card required";
+    trialNote ??
+    (mode === "marketing" ? "7-day free trial · no card" : "7-day free trial · card required");
 
   const prices = {
     starter: cycle === "yearly" ? "$86" : "$9",
@@ -156,7 +160,7 @@ export function PricingPlans({
         <section className={`flex flex-col rounded-card border border-line bg-surface p-7${ring("starter")}`}>
           <p className="text-xs font-medium uppercase tracking-[0.14em] text-ink-muted">Starter</p>
           <h2 className="mt-2 font-sans text-2xl font-semibold tracking-tight text-ink">
-            Solo bloggers
+            For solo bloggers
           </h2>
           <p className="mt-5 flex items-baseline gap-2">
             <span className="font-sans text-4xl font-semibold tracking-tight text-ink">
@@ -183,7 +187,7 @@ export function PricingPlans({
           </span>
           <p className="text-xs font-medium uppercase tracking-[0.14em] text-brand">Pro Writer</p>
           <h2 className="mt-2 font-sans text-2xl font-semibold tracking-tight text-ink">
-            Scale your strategy
+            For serious writers
           </h2>
           <p className="mt-5 flex items-baseline gap-2">
             <span className="font-sans text-4xl font-semibold tracking-tight text-ink">
@@ -220,7 +224,7 @@ export function PricingPlans({
         <section className={`flex flex-col rounded-card border border-line bg-surface p-7${ring("scale")}`}>
           <p className="text-xs font-medium uppercase tracking-[0.14em] text-ink-muted">Scale</p>
           <h2 className="mt-2 font-sans text-2xl font-semibold tracking-tight text-ink">
-            Agencies + teams
+            For agencies and teams
           </h2>
           <p className="mt-5 flex items-baseline gap-2">
             <span className="font-sans text-4xl font-semibold tracking-tight text-ink">

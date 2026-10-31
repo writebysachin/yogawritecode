@@ -1,11 +1,12 @@
 import { NextResponse } from "next/server";
-import { createClient } from "@supabase/supabase-js";
+import { createClient, type SupabaseClient } from "@supabase/supabase-js";
 import { Webhook } from "standardwebhooks";
+import { planForProduct } from "@/lib/dodo";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export const runtime = "nodejs";
 
-async function getClient() {
+async function getClient(): Promise<SupabaseClient> {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
   const serviceRoleKey = process.env.SUPABASE_SERVICE_ROLE_KEY;
   if (url && serviceRoleKey) {
@@ -14,6 +15,65 @@ async function getClient() {
     });
   }
   return createSupabaseServerClient();
+}
+
+type Selector = {
+  appUserId?: string | null;
+  email?: string | null;
+  subscriptionId?: string | null;
+};
+
+type ProfilePatchResult = {
+  matched: boolean;
+  error: { code?: string; message: string } | null;
+};
+
+/**
+ * Updates the profile behind a Dodo event.
+ *
+ * The stable app user id from checkout metadata is preferred. The email is the
+ * fallback so a checkout without metadata still lands on the right account, and
+ * the subscription id is the last resort for lifecycle events that carry no
+ * customer metadata at all.
+ */
+async function updateProfile(
+  supabase: SupabaseClient,
+  patch: Record<string, string>,
+  selector: Selector,
+): Promise<ProfilePatchResult> {
+  let lastError: { code?: string; message: string } | null = null;
+
+  if (selector.appUserId) {
+    const { data, error } = await supabase
+      .from("profiles")
+      .update(patch)
+      .eq("id", selector.appUserId)
+      .select("id");
+    if (error) lastError = error;
+    else if ((data ?? []).length > 0) return { matched: true, error: null };
+  }
+
+  if (selector.email) {
+    const { data, error } = await supabase
+      .from("profiles")
+      .update(patch)
+      .ilike("email", selector.email)
+      .select("id");
+    if (error) lastError = error;
+    else if ((data ?? []).length > 0) return { matched: true, error: null };
+  }
+
+  if (selector.subscriptionId) {
+    const { data, error } = await supabase
+      .from("profiles")
+      .update(patch)
+      .eq("dodo_subscription_id", selector.subscriptionId)
+      .select("id");
+    if (error) lastError = error;
+    else if ((data ?? []).length > 0) return { matched: true, error: null };
+  }
+
+  return { matched: false, error: lastError };
 }
 
 export async function POST(request: Request) {
@@ -72,51 +132,51 @@ export async function POST(request: Request) {
         : typeof customer.customer_id === "string"
           ? customer.customer_id
           : null;
+    const productId = typeof data.product_id === "string" ? data.product_id : null;
+    const plan = planForProduct(productId);
 
     const supabase = await getClient();
 
-    // Dodo event names: subscription.active (new/renewed subscription),
-    // payment.succeeded (one-time or subscription payment), subscription.renewed.
+    // A payment landed (or a trial started): the account is a paying customer.
     const ACTIVATING_EVENTS = ["subscription.active", "subscription.renewed", "payment.succeeded"];
 
     if (ACTIVATING_EVENTS.includes(eventType)) {
-      if (!email && !appUserId) {
-        console.error("[dodo webhook] event had no customer email or app_user_id", eventType);
+      if (!email && !appUserId && !subscriptionId) {
+        console.error("[dodo webhook] event had no customer email, user id or subscription id", eventType);
         return NextResponse.json({ received: true, handled: false });
       }
       const fullUpdate: Record<string, string> = { subscription_status: "active" };
       if (subscriptionId) fullUpdate.dodo_subscription_id = subscriptionId;
       if (customerId) fullUpdate.dodo_customer_id = customerId;
 
-      // Prefer the stable app user id from checkout metadata. Fall back to a
-      // case-insensitive email match so a checkout typo can't orphan payment.
-      const firstAttempt = appUserId
-        ? await supabase.from("profiles").update(fullUpdate).eq("id", appUserId).select("id")
-        : await supabase.from("profiles").update(fullUpdate).ilike("email", email as string).select("id");
-      let error = firstAttempt.error;
-      let matched = (firstAttempt.data ?? []).length > 0;
+      const { matched, error } = await updateProfile(supabase, fullUpdate, {
+        appUserId,
+        email,
+        subscriptionId,
+      });
 
-      // The billing-columns migration may not have been applied yet. Retry
-      // with just the status so the payment is never lost to a missing column.
+      // The billing-columns migration may not be applied yet. Retry with just
+      // the status so the payment is never lost to a missing column.
       if (error?.code === "PGRST204") {
         console.error(
           "[dodo webhook] billing columns missing, retrying with status only. " +
             "Run supabase/migrations/20261006010000_profiles_dodo_columns.sql",
           error.message,
         );
-        const retry = appUserId
-          ? await supabase
-              .from("profiles")
-              .update({ subscription_status: "active" })
-              .eq("id", appUserId)
-              .select("id")
-          : await supabase
-              .from("profiles")
-              .update({ subscription_status: "active" })
-              .ilike("email", email as string)
-              .select("id");
-        error = retry.error;
-        matched = (retry.data ?? []).length > 0;
+        const retry = await updateProfile(supabase, { subscription_status: "active" }, {
+          appUserId,
+          email,
+          subscriptionId,
+        });
+        if (retry.error) {
+          console.error("[dodo webhook] profile update failed", retry.error);
+          return NextResponse.json({ error: "Could not update profile." }, { status: 500 });
+        }
+        if (!retry.matched) {
+          console.error("[dodo webhook] no profile found for customer email", email);
+          return NextResponse.json({ error: "No matching profile." }, { status: 404 });
+        }
+        return NextResponse.json({ received: true, handled: true });
       }
 
       if (error) {
@@ -127,6 +187,36 @@ export async function POST(request: Request) {
         console.error("[dodo webhook] no profile found for customer email", email);
         return NextResponse.json({ error: "No matching profile." }, { status: 404 });
       }
+      console.log(`[dodo webhook] ${eventType} → active (plan=${plan ?? "unknown"})`);
+      return NextResponse.json({ received: true, handled: true });
+    }
+
+    // A renewal charge failed but Dodo is still retrying it. Access is kept
+    // during the grace window; the dashboard asks the customer to fix the card.
+    if (eventType === "subscription.on_hold") {
+      if (!subscriptionId && !email && !appUserId) {
+        return NextResponse.json({ received: true, handled: false });
+      }
+      const { matched } = await updateProfile(supabase, { subscription_status: "on_hold" }, {
+        appUserId,
+        email,
+        subscriptionId,
+      });
+      console.log(`[dodo webhook] ${eventType} → on_hold (matched=${matched})`);
+      return NextResponse.json({ received: true, handled: true });
+    }
+
+    // The initial mandate or the last retry failed — the subscription is dead.
+    if (eventType === "subscription.failed") {
+      if (!subscriptionId && !email && !appUserId) {
+        return NextResponse.json({ received: true, handled: false });
+      }
+      const { matched } = await updateProfile(supabase, { subscription_status: "failed" }, {
+        appUserId,
+        email,
+        subscriptionId,
+      });
+      console.log(`[dodo webhook] ${eventType} → failed (matched=${matched})`);
       return NextResponse.json({ received: true, handled: true });
     }
 
@@ -135,14 +225,33 @@ export async function POST(request: Request) {
         console.error("[dodo webhook] canceled event had no subscription id");
         return NextResponse.json({ received: true, handled: false });
       }
-      const { error } = await supabase
-        .from("profiles")
-        .update({ subscription_status: "canceled" })
-        .eq("dodo_subscription_id", subscriptionId);
-      if (error) {
-        console.error("[dodo webhook] cancel update failed", error);
-        return NextResponse.json({ error: "Could not update profile." }, { status: 500 });
+
+      // Cancelling at the end of the period keeps access until the period is
+      // over — Dodo sends subscription.expired when it really ends. Revoking
+      // here would take the customer's plan away days early.
+      const cancelAtPeriodEnd =
+        eventType === "subscription.cancelled" && data.cancel_at_next_billing_date === true;
+      if (cancelAtPeriodEnd) {
+        console.log(
+          `[dodo webhook] ${eventType} → cancels at period end, access kept until ${String(
+            data.next_billing_date ?? "the next billing date",
+          )}`,
+        );
+        return NextResponse.json({ received: true, handled: true });
       }
+
+      const { matched } = await updateProfile(supabase, { subscription_status: "canceled" }, {
+        appUserId,
+        email,
+        subscriptionId,
+      });
+      console.log(`[dodo webhook] ${eventType} → canceled (matched=${matched})`);
+      return NextResponse.json({ received: true, handled: true });
+    }
+
+    // Plan changes keep the subscription alive, so access is untouched.
+    if (eventType === "subscription.plan_changed") {
+      console.log(`[dodo webhook] ${eventType} (plan=${plan ?? "unknown"})`);
       return NextResponse.json({ received: true, handled: true });
     }
 

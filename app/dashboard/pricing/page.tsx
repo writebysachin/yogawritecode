@@ -3,7 +3,8 @@ import Link from "next/link";
 import { PageHeader } from "@/components/page-header";
 import { GetCredits } from "@/components/dashboard/get-credits";
 import { PricingPlans } from "@/components/pricing-plans";
-import { getPlanStatus } from "@/lib/plan";
+import { PLAN_NAMES } from "@/lib/dodo";
+import { getPlanStatus, getTrialState } from "@/lib/plan";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = {
@@ -14,9 +15,9 @@ export const metadata: Metadata = {
 export default async function PricingPage({
   searchParams,
 }: {
-  searchParams?: Promise<{ plan?: string; cycle?: string; new?: string }>;
+  searchParams?: Promise<{ plan?: string; cycle?: string; new?: string; activate?: string }>;
 }) {
-  const { plan, cycle, new: isNew } = (await searchParams) ?? {};
+  const { plan, cycle, new: isNew, activate } = (await searchParams) ?? {};
   const supabase = await createSupabaseServerClient();
   const { data: userData } = await supabase.auth.getUser();
 
@@ -37,9 +38,14 @@ export default async function PricingPage({
   const highlightPlan = plan === "starter" || plan === "pro" || plan === "scale" ? plan : undefined;
   const initialCycle = cycle === "yearly" ? ("yearly" as const) : ("monthly" as const);
   const credits = profileRow?.ai_credits_balance ?? 50;
+  const isActivating = activate === "1" && Boolean(highlightPlan);
+  // A customer who already used their onboarding trial must not be promised a
+  // second free period — their plan starts as soon as they check out.
+  const alreadyTrialed = getTrialState(userData.user, false).endsAt !== null;
+  const trialNote = alreadyTrialed ? "Your trial has ended · starts today" : undefined;
 
   // Current workspace usage, shown so upgrading feels informed rather than pushy.
-  const weekAgo = new Date(Date.now() - 7 * 86400000).toISOString();
+  const weekAgo = new Date(new Date().getTime() - 7 * 86400000).toISOString();
   const [projectsRes, analysesRes, draftsRes, spendRes, recentRes] = await Promise.all([
     supabase.from("projects").select("id", { count: "exact", head: true }),
     supabase.from("website_analyses").select("id", { count: "exact", head: true }),
@@ -71,10 +77,14 @@ export default async function PricingPage({
         title="Upgrade to Pro"
         description="Simple, transparent pricing for serious content teams. Cancel anytime."
       />
-      {highlightPlan ? (
+      {isActivating ? (
         <p className="mt-4 rounded-control bg-brand-soft/40 px-4 py-2.5 text-sm font-medium text-brand">
-          Continuing with {highlightPlan === "pro" ? "Pro" : highlightPlan === "scale" ? "Scale" : "Starter"} — pick
-          monthly or yearly below to check out.
+          Your {PLAN_NAMES[highlightPlan!]} trial has ended. Activate it below to keep Pro features —
+          pick monthly or yearly, then check out.
+        </p>
+      ) : highlightPlan ? (
+        <p className="mt-4 rounded-control bg-brand-soft/40 px-4 py-2.5 text-sm font-medium text-brand">
+          Continuing with {PLAN_NAMES[highlightPlan]} — pick monthly or yearly below to check out.
         </p>
       ) : isNew ? (
         <p className="mt-4 rounded-control bg-brand-soft/40 px-4 py-2.5 text-sm font-medium text-brand">
@@ -146,6 +156,7 @@ export default async function PricingPage({
           highlightPlan={highlightPlan}
           hideFree={!isNew}
           initialCycle={initialCycle}
+          trialNote={trialNote}
         />
       </div>
 

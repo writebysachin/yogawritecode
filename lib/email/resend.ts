@@ -191,6 +191,139 @@ function utcTimestamp(): string {
 }
 
 /**
+ * Sent once when a user's no-card trial runs out and they have not activated a
+ * plan yet. This is the conversion nudge: one link straight back to the plan
+ * they picked during onboarding.
+ */
+export function sendTrialEndedEmail(
+  to: string,
+  input: { plan: string; planName: string; cycle: "monthly" | "yearly" },
+): Promise<EmailResult> {
+  const billing = input.cycle === "yearly" ? "billed yearly" : "billed monthly";
+  const activateHref = absolute(
+    `/dashboard/pricing?plan=${encodeURIComponent(input.plan)}&cycle=${encodeURIComponent(
+      input.cycle,
+    )}&activate=1`,
+  );
+
+  return sendEmail({
+    to,
+    subject: `Your ${input.planName} trial has ended`,
+    text: [
+      `Your ${input.planName} trial has ended.`,
+      "",
+      `Your workspace is back on the free plan: 50 credits, 2 active projects and no exports.`,
+      "",
+      `Activate ${input.planName} (${billing}) to get unlimited credits, unlimited projects and priority processing.`,
+      "",
+      `Activate your plan: ${activateHref}`,
+      "",
+      "You are receiving this because you started a trial on Yoga Write Code.",
+    ].join("\n"),
+    html: `<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width,initial-scale=1" />
+    <meta name="color-scheme" content="light" />
+    <title>Your trial has ended</title>
+  </head>
+  <body style="margin:0;padding:0;background:#fafaf9;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;-webkit-font-smoothing:antialiased;">
+    <div style="display:none;max-height:0;max-width:0;overflow:hidden;opacity:0;font-size:1px;line-height:1px;color:#fafaf9;">Your ${escapeHtml(
+      input.planName,
+    )} trial has ended — activate it to keep unlimited credits.</div>
+
+    <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="background:#fafaf9;">
+      <tr>
+        <td align="center" style="padding:36px 16px;">
+          <table role="presentation" cellpadding="0" cellspacing="0" border="0" style="max-width:600px;background:#ffffff;border:1px solid #e7e5e4;border-radius:12px;overflow:hidden;">
+            <tr>
+              <td height="4" style="height:4px;line-height:4px;font-size:0;background:#5b4bdb;">&nbsp;</td>
+            </tr>
+            <tr>
+              <td style="padding:22px 28px;border-bottom:1px solid #e7e5e4;">
+                <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%">
+                  <tr>
+                    <td align="left" style="font-size:15px;font-weight:600;color:#1c1917;letter-spacing:-0.01em;">
+                      Yoga Write Code
+                    </td>
+                    <td align="right">
+                      <span style="display:inline-block;padding:5px 10px;background:#fff4e5;border-radius:999px;font-size:11px;font-weight:600;letter-spacing:0.06em;text-transform:uppercase;color:#a15c00;">Trial ended</span>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:28px 28px 8px 28px;">
+                <h1 style="margin:0;font-size:22px;line-height:1.3;font-weight:600;color:#1c1917;letter-spacing:-0.015em;">
+                  Your ${escapeHtml(input.planName)} trial has ended
+                </h1>
+                <p style="margin:8px 0 0 0;font-size:14px;line-height:1.6;color:#57534e;">
+                  Your workspace is back on the free plan: 50 credits, 2 active projects and no exports.
+                </p>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:20px 28px 0 28px;">
+                <table role="presentation" cellpadding="0" cellspacing="0" border="0" width="100%" style="background:#f5f5f4;border-radius:10px;">
+                  <tr>
+                    <td style="padding:18px 20px;">
+                      <p style="margin:0 0 6px 0;font-size:14px;font-weight:600;color:#1c1917;">Activate ${escapeHtml(
+                        input.planName,
+                      )}</p>
+                      <p style="margin:0;font-size:14px;line-height:1.6;color:#57534e;">
+                        Unlimited AI credits, unlimited projects, Markdown / PDF / Word export and priority processing. ${escapeHtml(
+                          billing[0].toUpperCase() + billing.slice(1),
+                        )}, cancel anytime.
+                      </p>
+                    </td>
+                  </tr>
+                </table>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:24px 28px 0 28px;">
+                <table role="presentation" cellpadding="0" cellspacing="0" border="0">
+                  <tr>
+                    <td align="center" bgcolor="#5b4bdb" style="background:#5b4bdb;border-radius:8px;">
+                      <a href="${activateHref}" style="display:inline-block;padding:13px 24px;font-size:14px;font-weight:600;line-height:1;color:#ffffff;text-decoration:none;border-radius:8px;">
+                        Activate ${escapeHtml(input.planName)}
+                      </a>
+                    </td>
+                  </tr>
+                </table>
+                <p style="margin:14px 0 0 0;font-size:13px;line-height:1.6;color:#57534e;">
+                  Button not working? Paste this link into your browser:<br />
+                  <a href="${activateHref}" style="color:#4c3dc7;">${activateHref}</a>
+                </p>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:28px 28px 28px 28px;border-top:1px solid #e7e5e4;margin-top:28px;">
+                <p style="margin:0;font-size:12px;line-height:1.6;color:#78716c;">
+                  You are receiving this because you started a trial on Yoga Write Code.
+                </p>
+                <p style="margin:8px 0 0 0;font-size:12px;line-height:1.6;color:#78716c;">
+                  <a href="${absolute("/privacy")}" style="color:#78716c;">Privacy Policy</a>
+                  &nbsp;&middot;&nbsp;
+                  <a href="${absolute("/terms")}" style="color:#78716c;">Terms</a>
+                </p>
+              </td>
+            </tr>
+          </table>
+          <p style="margin:16px 0 0 0;font-size:12px;color:#a8a29e;">
+            Yoga Write Code &middot; ${siteUrl.replace(/^https?:\/\//, "")}
+          </p>
+        </td>
+      </tr>
+    </table>
+  </body>
+</html>`,
+  });
+}
+
+/**
  * Delivers a /contact submission to the team inbox, with the visitor's address
  * as Reply-To so answering is just "Reply". CONTACT_EMAIL overrides the
  * recipient; RESEND_FROM_EMAIL must be on a domain verified in Resend.

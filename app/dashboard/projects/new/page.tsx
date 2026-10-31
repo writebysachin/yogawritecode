@@ -24,14 +24,19 @@ export default async function NewProjectPage({
   const { data: statusProfile } = userData.user
     ? await supabase
         .from("profiles")
-        .select("subscription_status")
+        .select("subscription_status, dodo_subscription_id")
         .eq("id", userData.user.id)
         .maybeSingle()
     : { data: null };
 
   const projectCount = count ?? 0;
-  const statusRow = statusProfile as { subscription_status?: string | null } | null;
-  const planStatus = getPlanStatus(userData.user, projectCount, statusRow?.subscription_status);
+  const statusRow = statusProfile as {
+    subscription_status?: string | null;
+    dodo_subscription_id?: string | null;
+  } | null;
+  const planStatus = getPlanStatus(userData.user, projectCount, statusRow?.subscription_status, {
+    hasEverSubscribed: Boolean(statusRow?.dodo_subscription_id),
+  });
   const isLocked = !planStatus.canCreateProject;
 
   return (

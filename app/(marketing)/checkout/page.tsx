@@ -11,6 +11,7 @@ import {
 } from "@/lib/dodo";
 import { CheckoutButton, CheckoutFrame, CheckoutProvider } from "@/components/marketing/checkout-flow";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { getTrialState } from "@/lib/plan";
 
 export const metadata: Metadata = {
   title: "Checkout",
@@ -55,6 +56,13 @@ export default async function CheckoutPage({
   const signupHref = `/signup?plan=${plan}&cycle=${cycle}&next=${encodeURIComponent(checkoutPath)}`;
   const loginHref = `/login?plan=${plan}&cycle=${cycle}&next=${encodeURIComponent(checkoutPath)}`;
 
+  // The onboarding trial is the customer's trial. Once it has been used there
+  // is no second free period — the plan starts as soon as they check out.
+  const alreadyTrialed = getTrialState(userData.user, false).endsAt !== null;
+  const trialLine = alreadyTrialed
+    ? "Your free trial has ended — this plan starts today."
+    : "7-day free trial, no charge today.";
+
   return (
     <main className="bg-canvas">
       <CheckoutProvider plan={plan} cycle={cycle} autoStart={authed && !canceled}>
@@ -71,7 +79,7 @@ export default async function CheckoutPage({
         </h1>
         <p className="mt-3 max-w-xl text-[15px] leading-7 text-ink-secondary">
           Three steps: pick a plan, {authed ? "confirm and pay" : "create your account"}, then land
-          back in your dashboard. 7-day free trial, no charge today.
+          back in your dashboard. {trialLine}
         </p>
 
         {/* Steps */}
@@ -171,7 +179,11 @@ export default async function CheckoutPage({
               <span className="font-sans text-4xl font-semibold tracking-tight text-ink">{price}</span>
               <span className="text-sm text-ink-muted">{unit}</span>
             </p>
-            <p className="mt-1 text-xs font-medium text-success">7-day free trial · no card charge today</p>
+            <p className="mt-1 text-xs font-medium text-success">
+              {alreadyTrialed
+                ? "Your trial has ended · this plan starts today"
+                : "7-day free trial · no card charge today"}
+            </p>
 
             <ul className="mt-5 space-y-2.5 border-t border-line pt-5">
               {PLAN_FEATURES[plan].map((feature) => (

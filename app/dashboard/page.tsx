@@ -82,7 +82,7 @@ export default async function OverviewPage({
   const { data: profile } = userData.user
     ? await supabase
         .from("profiles")
-        .select("full_name, subscription_status, ai_credits_balance, card_bonus_claimed")
+        .select("full_name, subscription_status, ai_credits_balance, card_bonus_claimed, dodo_subscription_id")
         .eq("id", userData.user.id)
         .maybeSingle()
     : { data: null };
@@ -136,8 +136,11 @@ export default async function OverviewPage({
     subscription_status?: string | null;
     ai_credits_balance?: number | null;
     card_bonus_claimed?: boolean | null;
+    dodo_subscription_id?: string | null;
   } | null;
-  const planStatus = getPlanStatus(userData.user, states.length, profileRow?.subscription_status);
+  const planStatus = getPlanStatus(userData.user, states.length, profileRow?.subscription_status, {
+    hasEverSubscribed: Boolean(profileRow?.dodo_subscription_id),
+  });
   const totalOpps = oppsRes.count ?? 0;
   const oppsDelta = (oppsWeek.count ?? 0) - (oppsPrev.count ?? 0);
   const draftsDelta = (draftsWeek.count ?? 0) - (draftsPrev.count ?? 0);

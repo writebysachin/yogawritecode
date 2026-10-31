@@ -16,29 +16,6 @@ function withRedirect(base: string): string {
   return url.toString();
 }
 
-// Live Dodo products. Env vars override when set; hardcoded links are the
-// fallback so checkout works without extra configuration.
-// Yearly links are optional overrides — when unset, the monthly link is used
-// and `metadata_cycle=yearly` still tells the webhook which cycle was chosen.
-const DEFAULT_LINKS = {
-  starter: withRedirect("https://checkout.dodopayments.com/buy/pdt_0NpdaJfvYRH4No4Adhd7F?quantity=1"),
-  pro: withRedirect("https://checkout.dodopayments.com/buy/pdt_0Np8pi0UC8l26KKHxN9Pc?quantity=1"),
-  scale: withRedirect("https://checkout.dodopayments.com/buy/pdt_0NpdcPj2kwmZyFUWgG2KH?quantity=1"),
-} as const;
-
-export const DODO_PAYMENT_LINK = DEFAULT_LINKS.pro;
-
-export const DODO_STARTER_LINK = process.env.NEXT_PUBLIC_DODO_STARTER_LINK ?? DEFAULT_LINKS.starter;
-export const DODO_PRO_LINK = process.env.NEXT_PUBLIC_DODO_PRO_LINK ?? DEFAULT_LINKS.pro;
-export const DODO_SCALE_LINK = process.env.NEXT_PUBLIC_DODO_SCALE_LINK ?? DEFAULT_LINKS.scale;
-
-const DODO_STARTER_YEARLY_LINK =
-  process.env.NEXT_PUBLIC_DODO_STARTER_YEARLY_LINK ?? DODO_STARTER_LINK;
-const DODO_PRO_YEARLY_LINK =
-  process.env.NEXT_PUBLIC_DODO_PRO_YEARLY_LINK ?? DODO_PRO_LINK;
-const DODO_SCALE_YEARLY_LINK =
-  process.env.NEXT_PUBLIC_DODO_SCALE_YEARLY_LINK ?? DODO_SCALE_LINK;
-
 export type PaidPlanId = "starter" | "pro" | "scale";
 export type BillingCycle = "monthly" | "yearly";
 
@@ -63,9 +40,10 @@ export function normalizeCycle(value: unknown): BillingCycle {
 }
 
 /**
- * Product ids behind the links above, used when the server creates a Checkout
- * Session for the embedded (inline) checkout. Keep these in sync with
- * DEFAULT_LINKS — a session and its link must point at the same product.
+ * Live Dodo product ids for the monthly plans.
+ *
+ * Yearly billing is a separate product on Dodo — the same product cannot be
+ * charged monthly and yearly — so the yearly ids live in their own map below.
  */
 export const DODO_PRODUCT_IDS: Record<PaidPlanId, string> = {
   starter: "pdt_0NpdaJfvYRH4No4Adhd7F",
@@ -74,9 +52,9 @@ export const DODO_PRODUCT_IDS: Record<PaidPlanId, string> = {
 };
 
 /**
- * Yearly products are optional. Until a dedicated yearly product id is
- * configured, a yearly selection uses the monthly product and relies on
- * `metadata_cycle` — the same behaviour as the payment-link fallback.
+ * Yearly product ids. These are required, not optional: without them a yearly
+ * selection silently falls back to the monthly product and the customer is
+ * billed monthly for a plan they bought yearly.
  */
 const DODO_YEARLY_PRODUCT_IDS: Partial<Record<PaidPlanId, string | undefined>> = {
   starter: process.env.DODO_STARTER_YEARLY_PRODUCT_ID,
@@ -84,6 +62,7 @@ const DODO_YEARLY_PRODUCT_IDS: Partial<Record<PaidPlanId, string | undefined>> =
   scale: process.env.DODO_SCALE_YEARLY_PRODUCT_ID,
 };
 
+/** The Dodo product that should be charged for a plan + billing cycle. */
 export function productIdFor(plan: PaidPlanId, cycle: BillingCycle): string {
   if (cycle === "yearly") {
     const yearly = DODO_YEARLY_PRODUCT_IDS[plan]?.trim();
@@ -91,6 +70,46 @@ export function productIdFor(plan: PaidPlanId, cycle: BillingCycle): string {
   }
   return DODO_PRODUCT_IDS[plan];
 }
+
+/**
+ * Reverse lookup so a Dodo webhook can map a paid product back to an app
+ * plan. Covers both the monthly and the yearly product for each plan.
+ */
+export function planForProduct(productId: string | null | undefined): PaidPlanId | null {
+  if (!productId) return null;
+  for (const plan of ["starter", "pro", "scale"] as PaidPlanId[]) {
+    if (DODO_PRODUCT_IDS[plan] === productId) return plan;
+    if (DODO_YEARLY_PRODUCT_IDS[plan]?.trim() === productId) return plan;
+  }
+  return null;
+}
+
+/** Dodo's hosted buy page for a product. */
+function hostedLink(productId: string): string {
+  return withRedirect(`https://checkout.dodopayments.com/buy/${productId}?quantity=1`);
+}
+
+// Hosted links are the fallback used when a checkout session can't be created.
+// They are derived from the product ids so the link always points at the same
+// product the session would charge. Env vars can still override them.
+const DEFAULT_LINKS = {
+  starter: hostedLink(DODO_PRODUCT_IDS.starter),
+  pro: hostedLink(DODO_PRODUCT_IDS.pro),
+  scale: hostedLink(DODO_PRODUCT_IDS.scale),
+} as const;
+
+export const DODO_PAYMENT_LINK = DEFAULT_LINKS.pro;
+
+export const DODO_STARTER_LINK = process.env.NEXT_PUBLIC_DODO_STARTER_LINK ?? DEFAULT_LINKS.starter;
+export const DODO_PRO_LINK = process.env.NEXT_PUBLIC_DODO_PRO_LINK ?? DEFAULT_LINKS.pro;
+export const DODO_SCALE_LINK = process.env.NEXT_PUBLIC_DODO_SCALE_LINK ?? DEFAULT_LINKS.scale;
+
+const DODO_STARTER_YEARLY_LINK =
+  process.env.NEXT_PUBLIC_DODO_STARTER_YEARLY_LINK ?? hostedLink(productIdFor("starter", "yearly"));
+const DODO_PRO_YEARLY_LINK =
+  process.env.NEXT_PUBLIC_DODO_PRO_YEARLY_LINK ?? hostedLink(productIdFor("pro", "yearly"));
+const DODO_SCALE_YEARLY_LINK =
+  process.env.NEXT_PUBLIC_DODO_SCALE_YEARLY_LINK ?? hostedLink(productIdFor("scale", "yearly"));
 
 /** Matches the environment the secret key belongs to. Defaults to live. */
 export function dodoMode(): "test" | "live" {
