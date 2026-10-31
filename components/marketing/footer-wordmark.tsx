@@ -3,19 +3,13 @@
 import Link from "next/link";
 import { useEffect, useRef, useState } from "react";
 
-const words = ["Yoga", "Write", "Code"] as const;
+const wordmark = "YogaWriteCode";
 
-const letterGroups = words.map((word, wordIndex) => {
-  const startIndex = words
-    .slice(0, wordIndex)
-    .reduce((total, previousWord) => total + previousWord.length, 0);
-
-  return word.split("").map((letter, index) => ({
-    letter,
-    key: `${wordIndex}-${index}`,
-    delay: (startIndex + index) * 0.055,
-  }));
-});
+const letters = Array.from(wordmark).map((letter, index) => ({
+  letter,
+  key: index,
+  delay: index * 0.055,
+}));
 
 export function FooterWordmark() {
   const ref = useRef<HTMLDivElement>(null);
@@ -52,21 +46,17 @@ export function FooterWordmark() {
       <Link href="/" aria-label="Yoga Write Code home" className="block">
         <span
           aria-hidden="true"
-          className="flex w-full items-baseline justify-between whitespace-nowrap font-heading text-[clamp(1.6rem,8vw,7rem)] font-extrabold uppercase leading-[0.9] tracking-[-0.06em] text-ink"
+          className="flex w-full items-baseline justify-between whitespace-nowrap font-heading text-[clamp(1.6rem,8.6vw,8rem)] font-extrabold uppercase leading-[0.9] tracking-[-0.06em] text-ink"
         >
-          {letterGroups.map((letters, wordIndex) => (
-            <span key={wordIndex} className="inline-flex">
-              {letters.map(({ letter, key, delay }) => (
-                <span
-                  key={key}
-                  className={`inline-block ${
-                    playing ? "footer-letter-drop" : "translate-y-[-110%] opacity-0"
-                  }`}
-                  style={{ animationDelay: `${delay}s` }}
-                >
-                  {letter}
-                </span>
-              ))}
+          {letters.map(({ letter, key, delay }) => (
+            <span
+              key={key}
+              className={`inline-block ${
+                playing ? "footer-letter-drop" : "translate-y-[-110%] opacity-0"
+              }`}
+              style={{ animationDelay: `${delay}s` }}
+            >
+              {letter}
             </span>
           ))}
         </span>
