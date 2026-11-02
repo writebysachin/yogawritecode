@@ -3,7 +3,14 @@ import type { BillingCycle, PaidPlanId } from "@/lib/dodo";
 
 export type Plan = "free" | "starter" | "pro" | "scale";
 
-export const FREE_PROJECT_LIMIT = 2;
+/**
+ * Projects a free account may own.
+ *
+ * One. The free tier exists to prove the workflow works, not to be a second
+ * free workspace — the paywall (TRD FR-6) is enforced on the server, so this
+ * number is the real allowance, not just a UI hint.
+ */
+export const FREE_PROJECT_LIMIT = 1;
 export const TRIAL_DAYS = 7;
 
 // Credit allocations — competitors gate by seats/documents; we gate by outcome.
@@ -21,6 +28,17 @@ export const REFERRAL_FREE_MONTHS_CAP = 3;
  * `failed` once the retries are exhausted, and that does revoke access.
  */
 const PRO_STATUSES = ["active", "trialing", "on_hold"] as const;
+
+/**
+ * True when a `profiles.subscription_status` grants Pro access.
+ *
+ * Client-safe on purpose — this module has no runtime imports, so it can be
+ * used from a client component. `lib/billing/subscription.ts` re-exports it.
+ */
+export function isProSubscription(status: string | null | undefined): boolean {
+  if (!status) return false;
+  return (PRO_STATUSES as readonly string[]).includes(status.trim());
+}
 
 export type PlanStatus = {
   plan: Plan;

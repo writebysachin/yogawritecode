@@ -6,7 +6,7 @@ import type { BillingCycle } from "@/lib/dodo";
 
 const FREE_FEATURES = [
   { label: "50 AI credits, no card required", included: true },
-  { label: "2 active projects", included: true },
+  { label: "1 active project", included: true },
   { label: "Full 5-step workflow", included: true },
   { label: "View-only exports", included: false },
 ] as const;

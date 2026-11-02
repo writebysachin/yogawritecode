@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { Field, FormError, PrimaryButton, inputClass } from "@/components/form";
 import { PageHeader } from "@/components/page-header";
 import { PlanBanner } from "@/components/dashboard/plan-banner";
@@ -49,11 +50,18 @@ export default async function NewProjectPage({
       {isLocked ? (
         <div className="mt-8 max-w-md rounded-card border border-line bg-surface-subtle px-5 py-6 text-center">
           <p className="text-sm font-semibold text-ink">
-            Free plan limit reached ({FREE_PROJECT_LIMIT} projects)
+            Free plan limit reached ({FREE_PROJECT_LIMIT} project
+            {FREE_PROJECT_LIMIT === 1 ? "" : "s"})
           </p>
           <p className="mt-1 text-sm text-ink-secondary">
             Upgrade to Pro for unlimited projects and all features.
           </p>
+          <Link
+            href="/dashboard/upgrade"
+            className="mt-4 inline-flex h-10 items-center justify-center rounded-field bg-brand px-4 text-sm font-medium text-white transition-colors hover:bg-brand-hover"
+          >
+            Upgrade to Pro
+          </Link>
         </div>
       ) : (
         <form action={createProject} className="mt-8 max-w-md space-y-4">

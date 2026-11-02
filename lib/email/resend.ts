@@ -212,7 +212,7 @@ export function sendTrialEndedEmail(
     text: [
       `Your ${input.planName} trial has ended.`,
       "",
-      `Your workspace is back on the free plan: 50 credits, 2 active projects and no exports.`,
+      `Your workspace is back on the free plan: 50 credits, 1 active project and no exports.`,
       "",
       `Activate ${input.planName} (${billing}) to get unlimited credits, unlimited projects and priority processing.`,
       "",
@@ -260,7 +260,7 @@ export function sendTrialEndedEmail(
                   Your ${escapeHtml(input.planName)} trial has ended
                 </h1>
                 <p style="margin:8px 0 0 0;font-size:14px;line-height:1.6;color:#57534e;">
-                  Your workspace is back on the free plan: 50 credits, 2 active projects and no exports.
+                  Your workspace is back on the free plan: 50 credits, 1 active project and no exports.
                 </p>
               </td>
             </tr>

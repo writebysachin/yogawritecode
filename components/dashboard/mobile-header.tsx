@@ -10,10 +10,14 @@ export function MobileHeader({
   name,
   email,
   projects,
+  isPro,
+  credits,
 }: {
   name?: string;
   email?: string;
   projects?: ProjectNavItem[];
+  isPro?: boolean;
+  credits?: number;
 }) {
   const [open, setOpen] = useState(false);
 
@@ -55,6 +59,8 @@ export function MobileHeader({
               name={name}
               email={email}
               projects={projects}
+              isPro={isPro}
+              credits={credits}
               onNavigate={() => setOpen(false)}
             />
           </div>

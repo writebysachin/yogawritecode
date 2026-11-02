@@ -3,6 +3,7 @@
 import {
   BarChart3,
   BookOpen,
+  CreditCard,
   FileText,
   LayoutGrid,
   Search,
@@ -111,7 +112,8 @@ export function ProjectSectionNav({ projects = [] }: { projects?: ProjectNavItem
 export function SettingsNav({ onNavigate }: { onNavigate?: () => void }) {
   return (
     <nav className="mt-6 space-y-1 px-4">
-      <NavItem href="/dashboard/pricing" label="Upgrade" icon={Sparkles} onNavigate={onNavigate} />
+      <NavItem href="/dashboard/upgrade" label="Upgrade" icon={Sparkles} onNavigate={onNavigate} />
+      <NavItem href="/dashboard/pricing" label="All plans" icon={CreditCard} onNavigate={onNavigate} />
       <NavItem href="/dashboard/settings" label="Settings" icon={Settings} onNavigate={onNavigate} />
     </nav>
   );

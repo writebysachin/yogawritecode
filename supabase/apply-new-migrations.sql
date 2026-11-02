@@ -68,6 +68,21 @@ drop policy if exists credit_ledger_insert_own on public.credit_ledger;
 create policy credit_ledger_insert_own on public.credit_ledger for insert with check (auth.uid() = user_id);
 
 -- ===================================================================
+-- supabase/migrations/20261101000000_billing_webhook_events.sql
+-- ===================================================================
+-- Billing subscription columns + webhook idempotency table (TRD FR-6 / SEC-3).
+alter table public.profiles
+  add column if not exists subscription_status text default 'free',
+  add column if not exists dodo_customer_id text,
+  add column if not exists dodo_subscription_id text,
+  add column if not exists ai_credits integer default 50;
+
+create table if not exists public.webhook_events (
+  event_id text primary key,
+  processed_at timestamptz not null default now()
+);
+
+-- ===================================================================
 -- supabase/migrations/20261015000000_google_connections.sql
 -- ===================================================================
 -- Google OAuth connections (Search Console + Analytics read-only).

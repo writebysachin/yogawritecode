@@ -3,6 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
 import { z } from "zod";
+import { canCreateProject } from "@/lib/billing/subscription";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 const createProjectSchema = z.object({
@@ -14,6 +15,11 @@ export async function createProject(formData: FormData) {
   const supabase = await createSupabaseServerClient();
   const { data: userData } = await supabase.auth.getUser();
   if (!userData.user) redirect("/login");
+
+  // TRD FR-6: the paywall is enforced here, on the server. Hiding the button
+  // is not enough — a crafted POST must be rejected too.
+  const allowed = await canCreateProject();
+  if (!allowed) redirect("/dashboard/upgrade?error=free-limit");
 
   const parsed = createProjectSchema.safeParse({
     name: formData.get("name"),

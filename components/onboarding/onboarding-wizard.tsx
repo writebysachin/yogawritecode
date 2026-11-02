@@ -46,7 +46,7 @@ const PLANS: Array<{
     blurb: "Try the full workflow",
     monthly: 0,
     yearly: 0,
-    features: ["50 AI credits", "2 active projects", "Full 5-step workflow"],
+    features: ["50 AI credits", "1 active project", "Full 5-step workflow"],
   },
   {
     id: "starter",
@@ -317,7 +317,7 @@ export function OnboardingWizard({
             ) : (
               <>
                 You are starting on the <span className="font-semibold text-ink">free plan</span>.
-                50 credits, 2 projects, no card. Upgrade anytime.
+                50 credits, 1 project, no card. Upgrade anytime.
               </>
             )}
           </div>

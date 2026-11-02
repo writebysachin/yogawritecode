@@ -4,6 +4,7 @@ import { MobileHeader } from "@/components/dashboard/mobile-header";
 import { Sidebar } from "@/components/dashboard/sidebar";
 import type { ProjectNavItem } from "@/components/dashboard/sidebar-nav";
 import { getUserDisplayName } from "@/lib/auth/user";
+import { getSubscription } from "@/lib/billing/subscription";
 import { getPlanStatus } from "@/lib/plan";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
@@ -39,10 +40,25 @@ export default async function DashboardLayout({
   const profileRow = profile as { subscription_status?: string | null } | null;
   const planStatus = getPlanStatus(data.user, projects.length, profileRow?.subscription_status);
 
+  // Billing state for the sidebar badge and the credit balance (TRD FR-6.8).
+  const subscription = await getSubscription();
+
   return (
     <div className="min-h-screen">
-      <Sidebar name={name} email={email} projects={projects} />
-      <MobileHeader name={name} email={email} projects={projects} />
+      <Sidebar
+        name={name}
+        email={email}
+        projects={projects}
+        isPro={planStatus.isPro}
+        credits={subscription.ai_credits}
+      />
+      <MobileHeader
+        name={name}
+        email={email}
+        projects={projects}
+        isPro={planStatus.isPro}
+        credits={subscription.ai_credits}
+      />
       <main className="lg:pl-60">
         <div className="mx-auto w-full max-w-5xl px-5 pb-16 pt-8 sm:px-8 lg:px-12 lg:pb-20 lg:pt-14">
           {children}

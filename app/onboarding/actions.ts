@@ -2,6 +2,7 @@
 
 import { revalidatePath } from "next/cache";
 import { redirect } from "next/navigation";
+import { canCreateProject } from "@/lib/billing/subscription";
 import { TRIAL_DAYS } from "@/lib/plan";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
@@ -29,6 +30,12 @@ export async function completeOnboarding(formData: FormData) {
   if (!data.user) {
     redirect("/login?next=%2Fonboarding");
   }
+
+  // TRD FR-6: onboarding hands the user straight into their workspace, so the
+  // free-tier project limit has to be enforced here as well — not only on the
+  // "new project" action.
+  const allowed = await canCreateProject();
+  if (!allowed) redirect("/dashboard/upgrade?error=free-limit");
 
   const goal = String(formData.get("goal") ?? "");
   const plan = String(formData.get("plan") ?? "free");

@@ -10,7 +10,7 @@ export default function PaymentSuccessPage() {
   return (
     <div className="flex min-h-[60vh] items-center justify-center rounded-surface bg-surface-subtle p-6">
       <div className="w-full max-w-md rounded-card border border-line bg-surface p-8 text-center">
-        <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-success-soft">
+        <span className="mx-auto flex h-14 w-14 items-center justify-center rounded-full bg-[#DCFCE7]">
           <svg
             viewBox="0 0 24 24"
             fill="none"
@@ -19,7 +19,7 @@ export default function PaymentSuccessPage() {
             strokeLinecap="round"
             strokeLinejoin="round"
             aria-hidden="true"
-            className="h-7 w-7 text-success"
+            className="h-7 w-7 text-[#15803D]"
           >
             <path d="M20 6 9 17l-5-5" />
           </svg>
@@ -29,8 +29,7 @@ export default function PaymentSuccessPage() {
           Payment Successful!
         </h1>
         <p className="mt-2 text-sm leading-6 text-ink-secondary">
-          Thank you for upgrading. Your account is being activated — you can head straight to your
-          dashboard.
+          Your Pro access activates within a few seconds.
         </p>
 
         <div className="mt-6 flex flex-col gap-2.5">
