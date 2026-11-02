@@ -79,7 +79,7 @@ export function PricingPlans({
   const planHref = (plan: string) =>
     mode === "marketing"
       ? `/login?plan=${plan}&cycle=${cycle}`
-      : `/checkout?plan=${plan}&cycle=${cycle}`;
+      : `/dashboard/upgrade?plan=${plan}&cycle=${cycle}`;
   const freeHref = mode === "marketing" ? "/login" : "/signup";
   const selectLabel = (plan: string) =>
     mode === "marketing" ? "Get started" : `Select ${plan}`;

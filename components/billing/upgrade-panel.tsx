@@ -3,6 +3,7 @@ import { CheckoutButton } from "@/components/billing/checkout-button";
 import { PageHeader } from "@/components/page-header";
 import { isProSubscription } from "@/lib/plan";
 import type { Subscription } from "@/lib/billing/subscription";
+import type { BillingCycle, PaidPlanId } from "@/lib/dodo";
 
 const PRO_FEATURES = [
   "Unlimited AI credits",
@@ -25,12 +26,20 @@ export function UpgradePanel({
   subscription,
   paymentLink,
   error,
+  plan,
+  cycle,
+  autoStart = false,
 }: {
   subscription: Subscription;
   paymentLink: string | null;
   error?: string;
+  plan?: string;
+  cycle?: string;
+  autoStart?: boolean;
 }) {
   const isPro = isProSubscription(subscription.subscription_status);
+  const safePlan = (plan === "starter" || plan === "pro" || plan === "scale" ? plan : undefined) as PaidPlanId | undefined;
+  const safeCycle = (cycle === "yearly" ? "yearly" : "monthly") as BillingCycle;
 
   return (
     <div className="min-w-0">
@@ -82,7 +91,7 @@ export function UpgradePanel({
                 Current plan
               </div>
             ) : (
-              <CheckoutButton paymentLink={paymentLink} />
+              <CheckoutButton paymentLink={paymentLink} plan={safePlan} cycle={safeCycle} autoStart={autoStart} />
             )}
           </div>
         </div>

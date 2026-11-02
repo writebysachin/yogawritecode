@@ -96,7 +96,7 @@ export async function POST(request: Request) {
       metadata: { app_user_id: user.id, plan, cycle },
       subscription_data: alreadyTrialed ? { trial_period_days: 0 } : undefined,
       return_url: DODO_SUCCESS_URL,
-      cancel_url: new URL("/checkout?canceled=1", request.url).toString(),
+      cancel_url: new URL("/dashboard/upgrade", request.url).toString(),
       customization: {
         theme: "light",
         show_order_details: true,
