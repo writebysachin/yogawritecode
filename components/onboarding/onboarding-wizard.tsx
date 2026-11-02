@@ -114,7 +114,7 @@ export function OnboardingWizard({
   const isPaid = plan !== "free";
   const price = cycle === "yearly" ? selectedPlan.yearly : selectedPlan.monthly;
   const unit = plan === "free" ? "/ forever" : cycle === "yearly" ? "/ year" : "/ month";
-  const submitLabel = isPaid ? `Start 7-day ${selectedPlan.name} trial` : "Start free plan";
+  const submitLabel = isPaid ? `Continue to payment →` : "Start free plan";
 
   return (
     <form action={completeOnboarding} className="mt-10">
@@ -292,7 +292,7 @@ export function OnboardingWizard({
                     <span className="text-xs text-ink-muted">{optionUnit}</span>
                   </span>
                   <span className="mt-1 block text-[11px] font-medium text-success">
-                    {option.id === "free" ? "No card required" : "7-day free trial · no card"}
+                    {option.id === "free" ? "No card required" : "7-day free trial · pay on next page"}
                   </span>
                   <span className="mt-4 block space-y-1 border-t border-line pt-3">
                     {option.features.map((feature) => (
@@ -310,9 +310,11 @@ export function OnboardingWizard({
           <div className="mt-6 rounded-control bg-surface-subtle px-4 py-3 text-xs leading-5 text-ink-secondary">
             {isPaid ? (
               <>
-                Your <span className="font-semibold text-ink">7-day {selectedPlan.name}</span> trial
-                starts now at <span className="font-semibold text-ink">{`$${price} ${unit}`}</span>{" "}
-                after the trial. No card is collected today.
+                You&apos;ll complete your{" "}
+                <span className="font-semibold text-ink">{selectedPlan.name}</span> payment on the
+                next page.{" "}
+                <span className="font-semibold text-ink">{`$${price} ${unit}`}</span> after the
+                7-day free trial.
               </>
             ) : (
               <>

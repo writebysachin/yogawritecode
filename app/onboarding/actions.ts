@@ -67,5 +67,12 @@ export async function completeOnboarding(formData: FormData) {
   }
 
   revalidatePath("/dashboard", "layout");
+
+  // Paid plan → send the user straight to checkout so they can pay.
+  // The checkout page auto-starts the inline payment form for signed-in users.
+  if (plan !== "free") {
+    redirect(`/checkout?plan=${plan}&cycle=${cycle}`);
+  }
+
   redirect("/dashboard");
 }
