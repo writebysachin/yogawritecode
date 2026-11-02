@@ -282,8 +282,22 @@ async function structured<T>(
 }
 
 export class BedrockAIProvider implements AIProvider {
+  /**
+   * Cache the website signals for the lifetime of this provider instance.
+   * Every workflow step calls extractWebsiteSignals for the same URL — this
+   * means the site is only fetched once instead of once per step.
+   */
+  private signalsCache = new Map<string, Awaited<ReturnType<typeof extractWebsiteSignals>>>();
+
+  private async getSignals(url: string) {
+    if (!this.signalsCache.has(url)) {
+      this.signalsCache.set(url, await extractWebsiteSignals(url));
+    }
+    return this.signalsCache.get(url)!;
+  }
+
   async analyzeWebsite(input: AnalysisInput): Promise<WebsiteAnalysisResult> {
-    const signals = await extractWebsiteSignals(input.websiteUrl);
+    const signals = await this.getSignals(input.websiteUrl);
     const websiteText = input.websiteText ?? JSON.stringify(signals);
     return structured(
       WebsiteAnalysisSchema,
@@ -293,7 +307,7 @@ export class BedrockAIProvider implements AIProvider {
   }
 
   async generateCluster(input: OpportunityContext): Promise<TopicClusterResult> {
-    const signals = await extractWebsiteSignals(input.websiteUrl);
+    const signals = await this.getSignals(input.websiteUrl);
     return structured(
       TopicClusterSchema,
       topicClusterPrompt(input, JSON.stringify(signals)),
@@ -302,7 +316,7 @@ export class BedrockAIProvider implements AIProvider {
   }
 
   async generateBrief(input: OpportunityContext): Promise<SeoBriefResult> {
-    const signals = await extractWebsiteSignals(input.websiteUrl);
+    const signals = await this.getSignals(input.websiteUrl);
     return structured(
       SeoBriefSchema,
       seoBriefPrompt(input, JSON.stringify(signals)),
@@ -311,7 +325,7 @@ export class BedrockAIProvider implements AIProvider {
   }
 
   async generateOutline(input: OpportunityContext): Promise<ArticleOutlineResult> {
-    const signals = await extractWebsiteSignals(input.websiteUrl);
+    const signals = await this.getSignals(input.websiteUrl);
     return structured(
       ArticleOutlineSchema,
       articleOutlinePrompt(input, JSON.stringify(signals)),

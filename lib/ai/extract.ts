@@ -49,10 +49,11 @@ export async function extractWebsiteSignals(url: string): Promise<WebsiteSignals
 
   try {
     const controller = new AbortController();
-    const timer = setTimeout(() => controller.abort(), 8000);
+    const timer = setTimeout(() => controller.abort(), 5000);
     const res = await fetch(url, {
       signal: controller.signal,
       headers: { "User-Agent": "YogaWriteCodeBot/0.1", Accept: "text/html" },
+      cache: "no-store",
     });
     clearTimeout(timer);
     if (!res.ok) return empty;
