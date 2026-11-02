@@ -35,6 +35,9 @@ const footerLinks = [
       { label: "Pricing", href: "/pricing" },
       { label: "About", href: "/about" },
       { label: "Contact", href: "/contact" },
+      { label: "Content Topics", href: "/ai-content-topics" },
+      { label: "AI Info", href: "/about-for-ai" },
+      { label: "Site Map", href: "/sitemap-page" },
     ],
   },
   {

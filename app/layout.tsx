@@ -19,7 +19,6 @@ const satoshi = localFont({
 });
 
 export const metadata: Metadata = {
-  // Resolves every relative metadata URL (og:image, twitter:image, icons) to an absolute URL.
   metadataBase: siteBaseUrl,
   title: {
     default: `${siteConfig.name} — ${siteConfig.tagline}`,
@@ -29,20 +28,25 @@ export const metadata: Metadata = {
     "Yoga Write Code is an AI content operating system that turns your website into structured content planning — content opportunities, topic clusters, SEO briefs, and outlines.",
   keywords: [
     "AI content planning",
-    "SEO content strategy",
-    "content marketing",
+    "AI content strategy",
+    "SEO content planning",
     "topic clusters",
+    "topical authority",
     "SEO briefs",
     "content outlines",
-    "SaaS content",
+    "SaaS content marketing",
     "content operations",
-    "SEO workflow",
+    "ICP keyword research",
     "AI writing tool",
-    "content calendar",
-    "digital marketing",
+    "content workflow",
+    "website content analysis",
+    "content brief generator",
+    "AI SEO tool",
   ],
   authors: [{ name: "Sachin Pandey", url: "https://sachinpandey.com.np" }],
   creator: "Sachin Pandey",
+  publisher: "Yoga Write Code",
+  category: "Technology",
   alternates: { canonical: "/" },
   openGraph: {
     type: "website",
@@ -67,10 +71,10 @@ export const metadata: Metadata = {
     description:
       "Turn your website into structured content planning — content opportunities, topic clusters, SEO briefs, and outlines.",
     images: ["/opengraph-image"],
+    creator: "@yogawritecode",
+    site: "@yogawritecode",
   },
   verification: {
-    // Google Search Console ownership token. Unrelated to the GTM container ID,
-    // which is loaded by <TagManager /> once the visitor accepts.
     google: "tL8-FZhkoHwlI57LESE58csCvMLzdQRxxCi6Cs6d7bc",
   },
 };
