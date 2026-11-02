@@ -54,13 +54,21 @@ export function SiteFooter() {
 
         {/* Top row: brand + tagline + subscribe input */}
         <div className="flex flex-col gap-6 sm:flex-row sm:items-start sm:justify-between">
-          {/* Brand + tagline + subscribe stacked on the left */}
-          <div className="flex flex-col gap-4">
+          {/* Brand + tagline + newsletter stacked on the left */}
+          <div className="flex flex-col gap-5">
             <div className="flex items-center gap-3">
               <MarketingBrand />
               <p className="text-sm text-ink-secondary">Write at flow, growth with clarity.</p>
             </div>
-            <FooterSubscribe />
+            <div>
+              <p className="text-sm font-semibold text-ink">Get one useful idea every week</p>
+              <p className="mt-0.5 text-xs leading-5 text-ink-muted">
+                Practical notes on AI content systems. No spam, unsubscribe anytime.
+              </p>
+              <div className="mt-3">
+                <FooterSubscribe />
+              </div>
+            </div>
           </div>
 
           {/* Nav links on the right */}
