@@ -1,10 +1,12 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { JsonLd } from "@/components/json-ld";
 import { MarketingCta } from "@/components/marketing/marketing-cta";
 import { WorkflowPreview } from "@/components/marketing/workflow-preview";
 import { WorkspacePreview } from "@/components/marketing/workspace-preview";
 import { siteBaseUrl } from "@/lib/site";
+import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = {
   title: "Yoga Write Code — Turn your website into your next five articles",
@@ -204,7 +206,10 @@ function SectionIntro({
   );
 }
 
-export default function HomePage() {
+export default async function HomePage() {
+  const supabase = await createSupabaseServerClient();
+  const { data } = await supabase.auth.getUser();
+  if (data.user) redirect("/dashboard");
   return (
     <div className="min-h-screen overflow-x-clip bg-surface font-sans text-ink">
       <main>

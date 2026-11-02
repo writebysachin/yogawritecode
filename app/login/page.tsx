@@ -35,7 +35,7 @@ export default async function LoginPage({
     const safeNext =
       nextParam && nextParam.startsWith("/") && !nextParam.startsWith("//")
         ? nextParam
-        : "/onboarding";
+        : "/dashboard";
     redirect(safeNext);
   }
 
