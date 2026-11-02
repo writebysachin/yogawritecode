@@ -73,8 +73,21 @@ function findAdverbs(sentence: string): string[] {
 }
 
 export function analyzeReadability(text: string): ReadabilityResult {
-  const sentences = splitSentences(text);
-  const words = splitWords(text);
+  // Strip markdown syntax before analysis so headings, bold, italic,
+  // placeholder text and list markers don't pollute the grade or sentence list.
+  const stripped = text
+    .replace(/^#+\s+/gm, "")           // ## headings
+    .replace(/\*\*(.+?)\*\*/g, "$1")   // **bold**
+    .replace(/\*(.+?)\*/g, "$1")       // *italic*
+    .replace(/`(.+?)`/g, "$1")         // `code`
+    .replace(/_\(not drafted yet\)_/g, "") // placeholder text
+    .replace(/^[-*+]\s+/gm, "")        // list markers
+    .replace(/\[([^\]]+)\]\([^)]+\)/g, "$1") // [link](url)
+    .replace(/_{1,2}(.+?)_{1,2}/g, "$1")     // _italic_ / __bold__
+    .trim();
+
+  const sentences = splitSentences(stripped);
+  const words = splitWords(stripped);
   const wordCount = words.length;
   const sentenceCount = sentences.length;
 

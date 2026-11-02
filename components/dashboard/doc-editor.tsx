@@ -438,34 +438,46 @@ export function DocEditor({
           <p className="text-xs font-medium uppercase tracking-[0.12em] text-ink-muted">
             Readability
           </p>
-          <p className="mt-1 text-3xl font-semibold tracking-tight" style={{ color: grade.color }}>
-            {readability.gradeLevel}
-          </p>
-          <p className="mt-1 text-xs font-medium" style={{ color: grade.color }}>
-            {grade.label} — Grade {readability.gradeLevel}
-          </p>
-          <ul className="mt-3 space-y-1.5 text-xs text-ink-secondary">
-            <li className="flex items-center justify-between">
-              <span>Complex sentences</span>
-              <span className="font-semibold text-ink">{readability.complexSentences.length}</span>
-            </li>
-            <li className="flex items-center justify-between">
-              <span>Passive voice</span>
-              <span className="font-semibold text-ink">{readability.passiveSentences.length}</span>
-            </li>
-            <li className="flex items-center justify-between">
-              <span>Adverbs</span>
-              <span className="font-semibold text-ink">{readability.adverbs.length}</span>
-            </li>
-          </ul>
-          {readability.complexSentences.slice(0, 2).map((sentence, index) => (
-            <p
-              key={`${index}-${sentence.slice(0, 24)}`}
-              className="mt-2 rounded-control bg-error-soft p-2 text-xs leading-5 text-error"
-            >
-              {sentence}
+          {readability.wordCount < 30 ? (
+            <p className="mt-2 text-xs text-ink-muted">
+              Start writing to see your readability score.
             </p>
-          ))}
+          ) : (
+            <>
+              <p className="mt-1 text-3xl font-semibold tracking-tight" style={{ color: grade.color }}>
+                {readability.gradeLevel}
+              </p>
+              <p className="mt-1 text-xs font-medium" style={{ color: grade.color }}>
+                {grade.label} — Grade {readability.gradeLevel}
+              </p>
+              <ul className="mt-3 space-y-1.5 text-xs text-ink-secondary">
+                <li className="flex items-center justify-between">
+                  <span>Complex sentences</span>
+                  <span className={`font-semibold ${readability.complexSentences.length > 2 ? "text-error" : "text-ink"}`}>
+                    {readability.complexSentences.length}
+                  </span>
+                </li>
+                <li className="flex items-center justify-between">
+                  <span>Passive voice</span>
+                  <span className={`font-semibold ${readability.passiveSentences.length > 1 ? "text-error" : "text-ink"}`}>
+                    {readability.passiveSentences.length}
+                  </span>
+                </li>
+                <li className="flex items-center justify-between">
+                  <span>Adverbs</span>
+                  <span className="font-semibold text-ink">{readability.adverbs.length}</span>
+                </li>
+              </ul>
+              {readability.complexSentences.slice(0, 2).map((sentence, index) => (
+                <p
+                  key={`${index}-${sentence.slice(0, 24)}`}
+                  className="mt-2 rounded-control bg-error-soft p-2 text-xs leading-5 text-error"
+                >
+                  {sentence.length > 120 ? `${sentence.slice(0, 120)}…` : sentence}
+                </p>
+              ))}
+            </>
+          )}
         </section>
 
         <section className="rounded-card border border-line bg-surface p-4">
