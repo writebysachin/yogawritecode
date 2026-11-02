@@ -58,10 +58,11 @@ export const metadata: Metadata = {
       "Turn your website into structured content planning — content opportunities, topic clusters, SEO briefs, and outlines.",
     images: [
       {
-        url: "/opengraph-image",
+        url: new URL("/opengraph-image", "https://yogawritecode.com").toString(),
         width: 1200,
         height: 630,
-        alt: siteConfig.name,
+        alt: "Yoga Write Code — Turn your website into your next five articles",
+        type: "image/png",
       },
     ],
   },
@@ -70,7 +71,7 @@ export const metadata: Metadata = {
     title: `${siteConfig.name} — ${siteConfig.tagline}`,
     description:
       "Turn your website into structured content planning — content opportunities, topic clusters, SEO briefs, and outlines.",
-    images: ["/opengraph-image"],
+    images: [new URL("/opengraph-image", "https://yogawritecode.com").toString()],
     creator: "@yogawritecode",
     site: "@yogawritecode",
   },
