@@ -57,7 +57,6 @@ export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
       <NavItem href="/dashboard/seo" label="Opportunities" icon={Search} onNavigate={onNavigate} />
       <NavItem href="/dashboard/content" label="Drafts & Editor" icon={FileText} onNavigate={onNavigate} />
       <NavItem href="/dashboard/analytics" label="Analytics" icon={BarChart3} onNavigate={onNavigate} />
-      <NavItem href="/dashboard/docs" label="Docs" icon={BookOpen} onNavigate={onNavigate} />
     </nav>
   );
 }
@@ -111,10 +110,16 @@ export function ProjectSectionNav({ projects = [] }: { projects?: ProjectNavItem
 
 export function SettingsNav({ onNavigate }: { onNavigate?: () => void }) {
   return (
-    <nav className="mt-6 space-y-1 px-4">
-      <NavItem href="/dashboard/upgrade" label="Upgrade" icon={Sparkles} onNavigate={onNavigate} />
-      <NavItem href="/dashboard/pricing" label="All plans" icon={CreditCard} onNavigate={onNavigate} />
-      <NavItem href="/dashboard/settings" label="Settings" icon={Settings} onNavigate={onNavigate} />
-    </nav>
+    <div className="mt-6 px-4">
+      <p className="px-3 text-xs font-medium uppercase tracking-[0.14em] text-ink-muted">
+        Settings
+      </p>
+      <nav className="mt-2 space-y-1">
+        <NavItem href="/dashboard/settings" label="Account" icon={Settings} onNavigate={onNavigate} />
+        <NavItem href="/dashboard/pricing" label="Billing" icon={CreditCard} onNavigate={onNavigate} />
+        <NavItem href="/dashboard/upgrade" label="Upgrade" icon={Sparkles} onNavigate={onNavigate} />
+        <NavItem href="/dashboard/docs" label="Docs" icon={BookOpen} onNavigate={onNavigate} />
+      </nav>
+    </div>
   );
 }

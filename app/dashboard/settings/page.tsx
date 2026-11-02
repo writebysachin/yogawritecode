@@ -5,7 +5,7 @@ import { getUserDisplayName } from "@/lib/auth/user";
 import { getPlanStatus } from "@/lib/plan";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
-export const metadata: Metadata = { title: "Settings" };
+export const metadata: Metadata = { title: "Account Settings" };
 
 export default async function SettingsPage() {
   const supabase = await createSupabaseServerClient();
@@ -32,7 +32,7 @@ export default async function SettingsPage() {
 
   return (
     <>
-      <PageHeader title="Settings" description="Manage your account and preferences." />
+      <PageHeader title="Account" description="Manage your account and preferences." />
 
       <div className="mt-8 space-y-6">
         <section className="rounded-card border border-line bg-surface p-6">
@@ -58,14 +58,14 @@ export default async function SettingsPage() {
             </div>
             {!isPro ? (
               <Link
-                href="/dashboard/pricing"
+                href="/dashboard/upgrade"
                 className="inline-flex h-10 items-center justify-center rounded-field bg-brand px-4 text-sm font-medium text-white transition-colors hover:bg-brand-hover"
               >
                 Upgrade to Pro
               </Link>
             ) : (
               <Link
-                href="/dashboard/pricing"
+                href="/dashboard/upgrade"
                 className="text-sm font-medium text-brand underline underline-offset-4"
               >
                 Manage plan
