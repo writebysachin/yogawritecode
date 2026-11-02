@@ -1,116 +1,190 @@
 # Product Requirements Document — Yoga Write Code (YWC)
 
+_Last updated: 2026-11-02_
+
+---
+
 ## 1. Product Overview
+
 - **Product name:** Yoga Write Code (YWC)
-- **One-line description:** AI-powered SEO content strategist that analyzes any website and generates a complete content pipeline — from opportunities to publishable outlines.
-- **Problem being solved:** Content creators, bloggers, and small agencies waste hours researching topics, planning clusters, and writing briefs. Most SEO tools give data but not actionable structure.
-- **Why this problem matters:** Quality content requires strategy. Without a clear pipeline (analysis → opportunities → clusters → briefs → outlines), creators produce scattered content that doesn't rank.I need to build a "Comparison" (Alternative To) section for my Next.js 16.3.1 App Router marketing site to capture high-intent SEO traffic.
+- **Tagline:** AI content operating system for SaaS companies.
+- **One-line:** Paste a website URL — get content opportunities, topic clusters, SEO briefs, and article outlines grounded in your actual business.
+- **Stage:** Live in production at yogawritecode.com / app.yogawritecode.com
+- **Problem:** Content creators waste hours on research, topic planning, and brief writing. Most SEO tools give data but not structure or workflow.
+- **Solution:** A guided 5-step AI workflow that turns any website into a complete content plan — from analysis to publishable draft.
 
-Before starting, read PRD.md, ARCHITECTURE.md, and CODING_RULES.md.
-
-Please execute the following tasks automatically:
-
-1. Folder Structure:
-- Create a new folder inside the marketing route group: `app/(marketing)/compare/`.
-
-2. Create a Reusable Comparison Table Component:
-- Create `components/marketing/comparison-table.tsx`.
-- It should be a "use client" component.
-- It must accept `competitorName` and `features` (an array of objects with `name`, `ywc` (boolean), and `competitor` (boolean)) as props.
-- Design it using the Design System:
-  - Clean table layout with borders (#E5E7EB).
-  - Left column: Feature name.
-  - Middle column: "Yoga Write Code" (with green checkmarks for true).
-  - Right column: "{competitorName}" (with gray X's for false).
-  - Highlight the "Yoga Write Code" column header with a light violet background (#EDE9FE) and text (#7C3AED).
-
-3. Create the Main Comparison Hub Page:
-- Create `app/(marketing)/compare/page.tsx`.
-- Add dynamic SEO metadata (Title: "Yoga Write Code vs The Competition | Best AI SEO Tool").
-- Include an H1: "The Smarter Alternative to Legacy SEO Tools".
-- Briefly explain why YWC is better (Full 5-step pipeline vs just text generation).
-- Add 3 large cards linking to the specific competitor pages below.
-
-4. Create Specific Competitor Pages:
-Create the following pages, each using the `ComparisonTable` component:
-- `app/(marketing)/compare/surfer-seo/page.tsx` (Focus: YWC is cheaper, easier, and includes AI generation, whereas Surfer is just an analyzer).
-- `app/(marketing)/compare/frase/page.tsx` (Focus: YWC has better topic clustering and live SERP analysis).
-- `app/(marketing)/compare/jasper/page.tsx` (Focus: YWC provides the strategy and briefs, Jasper just writes blindly).
-- Each page must have its own SEO metadata (e.g., Title: "Best SurferSEO Alternative 2026 | Yoga Write Code").
-
-5. Update the Mega Menu:
-- Open `components/marketing/header.tsx`.
-- Add a "Compare" link in the desktop navigation that links to `/compare`.
-
-6. Verification (Crucial):
-- Run `npm run build`.
-- If there are any TypeScript errors (strict null checks, missing props), read the logs, fix the code automatically, and run the build again.
-- Once successful, run:
-  `git add .`
-  `git commit -m "feat: Add Comparison pages (SurferSEO, Frase, Jasper alternatives)"`
-  `git push origin main`
-
-Do not ask for permission. Just read the context, write the code, fix any errors, and push to GitHub.
+---
 
 ## 2. Target Users
-- **Primary user:** Independent bloggers, content marketers, and small SaaS founders who want to grow organic traffic.
-- **User context:** Technical enough to deploy a website, but not SEO experts. They want AI to do the strategic thinking.
-- **Current alternatives:** Manual Google research, Ahrefs/SEMrush (expensive, overwhelming), ChatGPT prompts (unstructured).
-- **Main pain points:**
-  - Don't know what to write about
-  - Can't organize topics into clusters
-  - Briefs and outlines feel generic
-  - No clear workflow from idea → draft
 
-## 3. Product Goals
-1. **Goal 1:** Turn any website URL into a complete, actionable content strategy in under 2 minutes.
-2. **Goal 2:** Provide a guided 5-step workflow that removes decision fatigue.
-3. **Goal 3:** Generate structured, exportable outputs (clusters, briefs, outlines) ready for the Editor.
+| Segment | Description |
+|---|---|
+| Solo bloggers | Writing about their own site, want consistent output |
+| SaaS founders | Need content marketing but no dedicated team |
+| Content agencies | Managing multiple clients, need repeatable process |
+| Freelance writers | Want AI-assisted briefs and outlines |
 
-## 4. Core Features
-| Feature | Description | Priority |
+---
+
+## 3. Plans & Pricing
+
+| Plan | Price | Credits | Projects | Key Features |
+|---|---|---|---|---|
+| Free | $0 | 50 credits | 1 | Full 5-step workflow, view-only exports |
+| Starter | $9/mo · $86/yr | 200/mo | 3 | Markdown + PDF export |
+| Pro Writer | $19/mo · $182/yr | Unlimited | Unlimited | All exports, priority AI, 7-day trial |
+| Scale | $40/mo · $384/yr | Unlimited | Unlimited | Client exports, bulk briefs, support |
+
+- **Trial:** 7-day free trial on all paid plans — no card required at signup
+- **Card bonus:** +100 credits for adding a payment method (goes through Dodo checkout)
+- **Billing:** Dodo Payments (not Stripe)
+
+---
+
+## 4. Core 5-Step Workflow
+
+```
+Step 1: Analyze Website
+  → Scrape URL signals, AI returns company summary, category, audience, positioning
+  → Saves to: website_analyses + content_opportunities
+
+Step 2: Content Opportunities
+  → 3-5 scored topics with intent, difficulty, funnel stage, keywords
+  → Saves to: content_opportunities
+
+Step 3: Topic Cluster
+  → Pillar + supporting topics + internal linking suggestions
+  → Saves to: topic_clusters
+
+Step 4: SEO Brief
+  → Primary keyword, headings, questions, entities, competitor insights
+  → Saves to: seo_briefs
+
+Step 5: Article Outline
+  → H1 + 5-8 sections with purpose + bullet points
+  → Saves to: article_outlines
+
+Editor:
+  → Draft each section with AI or write manually
+  → Readability score (Flesch-Kincaid, strips markdown)
+  → SEO score (6 checks)
+  → Export: Markdown, HTML, PDF
+```
+
+---
+
+## 5. User Flows
+
+### New user (marketing → signup)
+1. Lands on `yogawritecode.com` (if signed in → redirect to /dashboard)
+2. Clicks pricing CTA → `/login?plan=pro&cycle=monthly`
+3. Signs up → email confirmation → `/onboarding`
+4. Onboarding: picks goal + plan → `completeOnboarding()`
+5. Free plan → `/dashboard`
+6. Paid plan → `/dashboard/upgrade?plan=pro&cycle=monthly&autostart=1` → Dodo checkout auto-opens
+7. Payment → `/dashboard/payment-success` → webhook activates account
+
+### Returning user
+1. Visits `yogawritecode.com` or `/login` → auto-redirect to `/dashboard`
+
+### Credit claim
+1. Clicks "N credits" button in header
+2. Modal opens → "Add card to claim 100 credits"
+3. Clicks → goes to `/dashboard/upgrade?autostart=1` → Dodo checkout
+4. After payment → webhook fires → account activates + credits flow from plan
+
+---
+
+## 6. Technical Architecture
+
+### AI Pipeline
+```
+URL → extractWebsiteSignals() [5s timeout, cached per provider instance]
+    → prompt builder (lib/ai/prompts.ts)
+    → AWS Bedrock (Claude Sonnet, ap-southeast-2)
+    → Zod schema validation (2 retries)
+    → Supabase insert
+```
+
+### Billing Pipeline
+```
+User selects plan → /api/checkout (creates Dodo session)
+    → Dodo inline checkout (dodopayments-checkout SDK)
+    → Payment success → /dashboard/payment-success
+    → Dodo webhook → /api/webhooks/dodo
+    → Signature verification (standardwebhooks)
+    → Idempotency check (webhook_events table)
+    → profiles.subscription_status = "active"
+```
+
+### Auth
+- Email/password via Supabase
+- Google OAuth via Supabase (for user sign-in)
+- Google OAuth via custom flow (for Search Console integration)
+- All protected routes: server-side `supabase.auth.getUser()` check
+
+---
+
+## 7. Database Tables
+
+| Table | Purpose |
+|---|---|
+| profiles | User profile, subscription_status, ai_credits_balance, card_bonus_claimed |
+| projects | name, website_url, user_id |
+| website_analyses | company_summary, target_audience, product_category |
+| content_opportunities | title, score, difficulty, intent, keywords, keyword_gaps |
+| topic_clusters | pillar_topic, supporting_topics, internal_linking_suggestions |
+| seo_briefs | primary_keyword, headings, questions, entities |
+| article_outlines | h1, sections (JSON) |
+| article_drafts | title, content (JSON sections) |
+| credit_ledger | delta, reason, step, model, balance_after |
+| webhook_events | event_id (unique — idempotency) |
+| google_connections | google_email, refresh_token_enc |
+
+---
+
+## 8. Marketing Site Pages
+
+| Page | Purpose |
+|---|---|
+| `/` | Home — hero, workflow, features, FAQ |
+| `/pricing` | Plan comparison |
+| `/about` | Founder story |
+| `/features` | Feature deep-dive (stub → needs content) |
+| `/solutions` | Overview (stub → needs content) |
+| `/solutions/agencies` | Agency use case (stub) |
+| `/compare` | Competitor hub |
+| `/compare/surfer-seo` | vs SurferSEO |
+| `/compare/frase` | vs Frase |
+| `/compare/jasper` | vs Jasper |
+| `/resources/blog` | Blog (stub → needs posts) |
+| `/resources/faqs` | FAQs (stub → needs content) |
+| `/contact` | Contact form |
+| `/sitemap-page` | HTML sitemap for AI crawlers |
+| `/ai-content-topics` | Topical authority map |
+| `/about-for-ai` | Structured reference for AI/LLMs |
+
+---
+
+## 9. Non-Functional Requirements
+
+| Requirement | Target | Status |
 |---|---|---|
-| Website Analysis | AI analyzes a URL and returns company summary, category, audience, positioning | Must-have |
-| Content Opportunities | Generate 3-5 specific content topics with scores, intent, funnel stage | Must-have |
-| Topic Clusters | Build pillar + supporting topics from any opportunity | Must-have |
-| SEO Briefs | Keyword, headings, questions, entities for a topic | Must-have |
-| Article Outlines | H1 + structured sections with points | Must-have |
-| Drafts & Editor | Write and edit articles with AI assistance | Must-have |
+| AI response time | < 45s per step | ✅ 45s timeout set |
+| Page load | < 2s | ✅ Vercel edge |
+| Webhook security | Signature verified | ✅ standardwebhooks |
+| Webhook idempotency | No duplicate activations | ✅ webhook_events table |
+| No secrets in client | All keys server-only | ✅ |
+| OG image | Absolute URL for social sharing | ✅ |
+| AI content tone | Plain English, no jargon | ✅ prompt rewrite Nov 2026 |
+| RLS | Row-level security on all tables | ⚠️ disabled (tech debt) |
 
-## 5. User Flow
-1. User signs up and creates a **Project** (name + website URL).
-2. User clicks **"Analyze Website"** → AI returns Step 1 (Analysis).
-3. User sees **Step 2 (Opportunities)** → clicks "Build Cluster" on any opportunity.
-4. User sees **Step 3 (Cluster)** → clicks "Generate SEO Brief".
-5. User sees **Step 4 (Brief)** → clicks "Generate Outline".
-6. User sees **Step 5 (Outline)** → opens Editor to draft the article.
+---
 
-## 6. Scope
-### In scope (MVP)
-- Single-user projects
-- 5-step AI workflow
-- Supabase database for persistence
-- AWS Bedrock for AI
-- Vercel deployment
-
-### Out of scope (for now)
-- Multi-user teams
-- Real analytics integrations (Google Search Console)
-- Payment/billing
-
-## 7. Success Metrics
-- **Metric:** % of users who complete all 5 steps for at least one project
-- **Measurement method:** Database query on completed outlines
-- **Target:** 40% within first month
-
-## 8. Requirements
-### Functional
-- Each step depends on the previous step's output
-- Users can regenerate any step
-- All AI outputs are saved to Supabase
-- Errors show clear messages to the user
-
-### Non-functional
-- **Security:** Row Level Security on Supabase, no secrets in client code
-- **Performance:** AI calls under 30s, page loads under 2s
-- **Accessibility:** Keyboard navigation, semantic HTML, ARIA labels
+## 10. Out of Scope (for now)
+- Multi-user teams / workspaces
+- Real-time collaboration
+- GA4 / Search Console data in dashboard (connection exists, data display TBD)
+- Native mobile app
+- Custom AI model fine-tuning
+- White-label / agency reseller
