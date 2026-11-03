@@ -295,6 +295,12 @@ export function DocEditor({
           name="title"
           placeholder="Untitled draft"
           rows={1}
+          ref={(el) => {
+            if (el) {
+              el.style.height = "auto";
+              el.style.height = `${el.scrollHeight}px`;
+            }
+          }}
           className="font-sans w-full resize-none overflow-hidden border-0 bg-transparent text-3xl font-semibold leading-tight tracking-tight text-ink focus:outline-none"
           onInput={(e) => {
             const el = e.currentTarget;
@@ -332,25 +338,27 @@ export function DocEditor({
                   : "scroll-mt-24 rounded-card border border-line bg-surface-subtle/50 p-6 transition-colors"
               }
             >
-              <div className="flex items-center gap-3">
+              <div className="flex items-start gap-3">
                 <span className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-control bg-brand-soft text-xs font-bold text-brand">
                   {String(i + 1).padStart(2, "0")}
                 </span>
-                <h2 className="font-sans min-w-0 flex-1 text-lg font-semibold tracking-tight text-ink">
-                  {s.heading}
-                </h2>
-                <span
-                  className={
-                    words > 0
-                      ? "inline-flex shrink-0 items-center gap-1.5 text-xs text-ink-secondary"
-                      : "inline-flex shrink-0 items-center gap-1.5 text-xs text-ink-muted"
-                  }
-                >
+                <div className="min-w-0 flex-1">
+                  <h2 className="font-sans text-lg font-semibold tracking-tight text-ink">
+                    {s.heading}
+                  </h2>
                   <span
-                    className={words > 0 ? "h-1.5 w-1.5 rounded-full bg-success" : "h-1.5 w-1.5 rounded-full bg-line"}
-                  />
-                  {words > 0 ? `${words.toLocaleString()} words` : "Empty"}
-                </span>
+                    className={
+                      words > 0
+                        ? "inline-flex items-center gap-1.5 text-xs text-ink-secondary"
+                        : "inline-flex items-center gap-1.5 text-xs text-ink-muted"
+                    }
+                  >
+                    <span
+                      className={words > 0 ? "h-1.5 w-1.5 rounded-full bg-success" : "h-1.5 w-1.5 rounded-full bg-line"}
+                    />
+                    {words > 0 ? `${words.toLocaleString()} words` : "Empty"}
+                  </span>
+                </div>
               </div>
               {s.purpose ? <p className="mt-1.5 text-xs leading-5 text-ink-muted">{s.purpose}</p> : null}
               {s.points && s.points.length > 0 ? (
@@ -399,7 +407,7 @@ export function DocEditor({
           <article className="mt-8 space-y-6">
             {current().map((s, i) => (
               <section key={s.heading + i} id={`doc-section-${i}`} className="scroll-mt-24 rounded-card border border-line bg-surface-subtle/50 p-6">
-                <div className="flex items-center gap-3">
+                <div className="flex items-start gap-3">
                   <span className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-control bg-brand-soft text-xs font-bold text-brand">
                     {String(i + 1).padStart(2, "0")}
                   </span>
