@@ -5,7 +5,7 @@ import { PricingPlans } from "@/components/pricing-plans";
 export const metadata: Metadata = {
   title: "Pricing",
   description:
-    "Start free with 50 credits, no card required. Starter $9, Pro $19, Scale $40. Cancel anytime.",
+    "Starter $9, Pro $19, Scale $40. Simple pricing, cancel anytime.",
   alternates: { canonical: "/pricing" },
 };
 
@@ -18,10 +18,7 @@ export default function PricingPage() {
             Pricing
           </h1>
           <p className="mt-4 max-w-xl text-lg text-ink-secondary">
-            Start free. Upgrade when your pipeline pays for itself. Cancel anytime.
-          </p>
-          <p className="mt-3 max-w-xl text-sm text-ink-muted">
-            Simple, transparent pricing. No free plan, no trials — pick a plan and get started. Cancel anytime.
+            Simple, transparent pricing. Cancel anytime.
           </p>
 
           <div className="mt-10">
