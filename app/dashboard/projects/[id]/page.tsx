@@ -180,23 +180,30 @@ export default async function ProjectPage({ params, searchParams }: ProjectPageP
         </div>
       )}
 
-      {/* Progress Steps */}
+      {/* Progress Steps — each pill reflects real data state */}
       <div className="mt-6 flex flex-wrap gap-2">
-        <span className={`px-3 py-1.5 rounded-full text-sm font-medium ${analysis ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-600"}`}>
-          {analysis ? "✓" : "○"} 01 Analyze
-        </span>
-        <span className={`px-3 py-1.5 rounded-full text-sm font-medium ${opportunities.length > 0 ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-600"}`}>
-          {opportunities.length > 0 ? "✓" : "○"} 02 Opportunities
-        </span>
-        <span className={`px-3 py-1.5 rounded-full text-sm font-medium ${cluster ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-600"}`}>
-          {cluster ? "✓" : "○"} 03 Cluster
-        </span>
-        <span className={`px-3 py-1.5 rounded-full text-sm font-medium ${brief ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-600"}`}>
-          {brief ? "✓" : "○"} 04 Brief
-        </span>
-        <span className={`px-3 py-1.5 rounded-full text-sm font-medium ${outline ? "bg-green-100 text-green-700" : "bg-gray-100 text-gray-600"}`}>
-          {outline ? "✓" : "○"} 05 Outline
-        </span>
+        {(
+          [
+            { done: !!analysis,                label: "01 · Analyze",       href: "#analysis" },
+            { done: opportunities.length > 0,  label: "02 · Opportunities", href: "#opportunities" },
+            { done: !!cluster,                 label: "03 · Cluster",       href: "#cluster" },
+            { done: !!brief,                   label: "04 · Brief",         href: "#brief" },
+            { done: !!outline,                 label: "05 · Outline",       href: "#outline" },
+          ] as const
+        ).map(({ done, label, href }) => (
+          <a
+            key={href}
+            href={href}
+            className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${
+              done
+                ? "bg-success-soft text-success hover:bg-success-soft/80"
+                : "bg-surface-subtle text-ink-muted hover:bg-surface-subtle/80"
+            }`}
+          >
+            <span aria-hidden="true">{done ? "✓" : "○"}</span>
+            {label}
+          </a>
+        ))}
       </div>
 
       {/* STEP 1: Analysis */}
@@ -328,23 +335,33 @@ export default async function ProjectPage({ params, searchParams }: ProjectPageP
       {outline && (
         <Section id="outline" step={5} title="Article outline">
           <div>
-            <h3 className="text-lg font-semibold leading-8 text-ink">{safeText(outline.h1, "Untitled outline")}</h3>
+            <h3 className="text-xl font-bold leading-snug text-ink">
+              {safeText(outline.h1, "Untitled outline")}
+            </h3>
+
             {(() => {
               const sections = toOutlineSections(outline.sections);
               if (sections.length === 0) {
                 return <p className="mt-3 text-sm leading-6 text-ink-muted">No sections saved yet.</p>;
               }
               return (
-                <ol className="mt-4 space-y-4">
+                <ol className="mt-5 space-y-3">
                   {sections.map((s, i) => (
-                    <li key={i} className="rounded-lg border border-line bg-surface-subtle p-4">
-                      <p className="font-medium leading-7 text-ink">
-                        <span className="mr-2 text-ink-muted">{String(i + 1).padStart(2, "0")}</span>
+                    <li key={i} className="rounded-card border border-line bg-surface p-4">
+                      <p className="flex items-baseline gap-2.5 font-semibold leading-7 text-ink">
+                        <span className="shrink-0 text-xs font-bold text-ink-muted">
+                          {String(i + 1).padStart(2, "0")}
+                        </span>
                         {safeText(s.heading)}
                       </p>
                       {s.points.length > 0 && (
-                        <ul className="mt-2 space-y-1.5 pl-6 list-disc text-sm leading-6 text-ink-secondary">
-                          {s.points.map((p, j) => <li key={j}>{safeText(p)}</li>)}
+                        <ul className="mt-2.5 space-y-1.5 pl-6">
+                          {s.points.map((p, j) => (
+                            <li key={j} className="flex items-start gap-2 text-[14px] leading-6 text-ink-secondary">
+                              <span aria-hidden="true" className="mt-[7px] h-1.5 w-1.5 shrink-0 rounded-full bg-ink-muted" />
+                              {safeText(p)}
+                            </li>
+                          ))}
                         </ul>
                       )}
                     </li>
@@ -352,6 +369,29 @@ export default async function ProjectPage({ params, searchParams }: ProjectPageP
                 </ol>
               );
             })()}
+          </div>
+
+          {/* Export actions — matching the image layout */}
+          <div className="mt-8 space-y-3">
+            <a
+              href={`/dashboard/projects/${id}/outline.pdf`}
+              className="flex w-full items-center justify-center gap-2 rounded-card bg-ink px-5 py-3.5 text-sm font-semibold text-white transition hover:bg-gray-800"
+              data-outline-pdf
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
+                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                <polyline points="7 10 12 15 17 10" />
+                <line x1="12" y1="15" x2="12" y2="3" />
+              </svg>
+              Download PDF
+            </a>
+            <a
+              href={`/dashboard/projects/${id}/editor`}
+              className="flex w-full items-center justify-center rounded-card border border-line px-5 py-3 text-sm font-semibold text-ink transition hover:bg-surface-subtle"
+            >
+              Open in Editor
+            </a>
+            <p className="text-center text-xs text-ink-muted">PDF includes the full outline.</p>
           </div>
         </Section>
       )}

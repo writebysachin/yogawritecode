@@ -6,13 +6,15 @@ import {
   CreditCard,
   FileText,
   LayoutGrid,
+  Globe,
   Search,
   Settings,
   Sparkles,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
+import { useTransition } from "react";
 
 export type ProjectNavItem = {
   id: string;
@@ -31,21 +33,39 @@ function NavItem({
   onNavigate?: () => void;
 }) {
   const pathname = usePathname();
+  const router = useRouter();
+  const [isPending, startTransition] = useTransition();
   const active =
     href === "/dashboard" ? pathname === "/dashboard" : pathname.startsWith(href);
+
+  function handleClick(e: React.MouseEvent<HTMLAnchorElement>) {
+    e.preventDefault();
+    onNavigate?.();
+    startTransition(() => {
+      router.push(href);
+    });
+  }
 
   return (
     <Link
       href={href}
-      onClick={onNavigate}
-      className={
+      onClick={handleClick}
+      aria-current={active ? "page" : undefined}
+      className={[
+        "flex items-center gap-2.5 rounded-control px-3 py-2 text-sm font-medium transition-colors",
         active
-          ? "flex items-center gap-2.5 rounded-control bg-brand-soft px-3 py-2 text-sm font-medium text-brand"
-          : "flex items-center gap-2.5 rounded-control px-3 py-2 text-sm font-medium text-ink-secondary transition-colors hover:bg-surface-subtle hover:text-ink"
-      }
+          ? "bg-brand-soft text-brand"
+          : "text-ink-secondary hover:bg-surface-subtle hover:text-ink",
+        isPending && !active ? "opacity-60" : "",
+      ]
+        .filter(Boolean)
+        .join(" ")}
     >
-      <Icon size={18} />
+      <Icon size={18} className={isPending && !active ? "animate-pulse" : ""} />
       {label}
+      {isPending && !active ? (
+        <span className="ml-auto h-1.5 w-1.5 rounded-full bg-brand animate-pulse" />
+      ) : null}
     </Link>
   );
 }
@@ -54,6 +74,7 @@ export function SidebarNav({ onNavigate }: { onNavigate?: () => void }) {
   return (
     <nav className="space-y-1 px-4">
       <NavItem href="/dashboard" label="Overview" icon={LayoutGrid} onNavigate={onNavigate} />
+      <NavItem href="/dashboard/analyse" label="Analyse Website" icon={Globe} onNavigate={onNavigate} />
       <NavItem href="/dashboard/seo" label="Opportunities" icon={Search} onNavigate={onNavigate} />
       <NavItem href="/dashboard/content" label="Drafts & Editor" icon={FileText} onNavigate={onNavigate} />
       <NavItem href="/dashboard/analytics" label="Analytics" icon={BarChart3} onNavigate={onNavigate} />
