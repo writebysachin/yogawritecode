@@ -289,12 +289,18 @@ export function DocEditor({
       </div>
 
       <div className="mt-6 rounded-card border border-line bg-surface px-8 py-12 sm:px-12">
-        <input
+        <textarea
           value={title}
           onChange={(e) => setTitle(e.target.value)}
           name="title"
           placeholder="Untitled draft"
-          className="font-sans w-full border-0 bg-transparent text-3xl font-semibold tracking-tight text-ink focus:outline-none"
+          rows={1}
+          className="font-sans w-full resize-none overflow-hidden border-0 bg-transparent text-3xl font-semibold leading-tight tracking-tight text-ink focus:outline-none"
+          onInput={(e) => {
+            const el = e.currentTarget;
+            el.style.height = "auto";
+            el.style.height = `${el.scrollHeight}px`;
+          }}
         />
 
         {sections.length > 1 ? (
@@ -347,6 +353,15 @@ export function DocEditor({
                 </span>
               </div>
               {s.purpose ? <p className="mt-1.5 text-xs leading-5 text-ink-muted">{s.purpose}</p> : null}
+              {s.points && s.points.length > 0 ? (
+                <ul className="mt-2 space-y-0.5 pl-4">
+                  {s.points.map((pt, pi) => (
+                    <li key={pi} className="list-disc text-xs leading-5 text-ink-muted">
+                      {pt}
+                    </li>
+                  ))}
+                </ul>
+              ) : null}
               <textarea
                 rows={Math.max(6, (values[i] ?? "").split("\n").length + 2)}
                 value={values[i] ?? ""}
