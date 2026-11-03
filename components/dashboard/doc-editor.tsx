@@ -298,14 +298,14 @@ export function DocEditor({
         />
 
         {sections.length > 1 ? (
-          <nav aria-label="Sections" className="mt-6 flex flex-wrap gap-2">
+          <nav aria-label="Sections" className="mt-6 flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
             {sections.map((s, i) => (
               <a
                 key={`nav-${s.heading}-${i}`}
                 href={`#doc-section-${i}`}
-                className="rounded-control border border-line px-2.5 py-1 text-xs font-medium text-ink-secondary transition-colors hover:border-brand hover:text-brand"
+                className="rounded-control border border-line px-2.5 py-1 text-xs font-medium text-ink-secondary transition-colors hover:border-brand hover:text-brand whitespace-nowrap"
               >
-                {String(i + 1).padStart(2, "0")} · {(s.heading || "Untitled").slice(0, 28)}
+                {String(i + 1).padStart(2, "0")} · {s.heading || "Untitled"}
               </a>
             ))}
           </nav>
@@ -330,7 +330,7 @@ export function DocEditor({
                 <span className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-control bg-brand-soft text-xs font-bold text-brand">
                   {String(i + 1).padStart(2, "0")}
                 </span>
-                <h2 className="font-sans min-w-0 flex-1 truncate text-lg font-semibold tracking-tight text-ink">
+                <h2 className="font-sans min-w-0 flex-1 text-lg font-semibold tracking-tight text-ink">
                   {s.heading}
                 </h2>
                 <span
@@ -388,7 +388,7 @@ export function DocEditor({
                   <span className="inline-flex h-7 w-7 shrink-0 items-center justify-center rounded-control bg-brand-soft text-xs font-bold text-brand">
                     {String(i + 1).padStart(2, "0")}
                   </span>
-                  <h2 className="font-sans min-w-0 flex-1 truncate text-lg font-semibold tracking-tight text-ink">
+                  <h2 className="font-sans min-w-0 flex-1 text-lg font-semibold tracking-tight text-ink">
                     {s.heading}
                   </h2>
                 </div>
