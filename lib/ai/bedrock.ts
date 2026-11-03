@@ -200,6 +200,28 @@ function normalizeStructuredValue(value: unknown): unknown {
     });
   }
 
+  // Flatten a plain string field: if the AI returned an object, extract the
+  // first string value found inside it (common when the model returns
+  // { text: "..." } or { title: "..." } instead of a bare string).
+  function flattenToString(value: unknown): string {
+    if (typeof value === "string") return value;
+    if (isRecord(value)) {
+      for (const v of Object.values(value)) {
+        if (typeof v === "string" && v.trim()) return v.trim();
+      }
+    }
+    return String(value ?? "");
+  }
+
+  // Flatten array-of-string fields where items may be objects instead of strings.
+  function flattenStringArray(value: unknown): unknown {
+    if (!Array.isArray(value)) return value;
+    return value.map((item) => (typeof item === "string" ? item : flattenToString(item)));
+  }
+
+  if (record.priority !== undefined && typeof record.priority !== "string") {
+    record.priority = flattenToString(record.priority);
+  }
   if (typeof record.priority === "string") {
     const priority = record.priority.toLowerCase();
     record.priority = priority.includes("high")
@@ -209,12 +231,23 @@ function normalizeStructuredValue(value: unknown): unknown {
         : "medium";
   }
 
-  if (record.supportingTopics !== undefined && !Array.isArray(record.supportingTopics)) {
-    record.supportingTopics = [String(record.supportingTopics)];
+  // Flatten top-level string fields that the AI sometimes returns as objects.
+  for (const field of ["pillarTopic", "searchIntent"] as const) {
+    if (record[field] !== undefined && typeof record[field] !== "string") {
+      record[field] = flattenToString(record[field]);
+    }
   }
 
-  if (record.internalLinkingSuggestions !== undefined && !Array.isArray(record.internalLinkingSuggestions)) {
-    record.internalLinkingSuggestions = [String(record.internalLinkingSuggestions)];
+  if (record.supportingTopics !== undefined) {
+    record.supportingTopics = Array.isArray(record.supportingTopics)
+      ? flattenStringArray(record.supportingTopics)
+      : [flattenToString(record.supportingTopics)];
+  }
+
+  if (record.internalLinkingSuggestions !== undefined) {
+    record.internalLinkingSuggestions = Array.isArray(record.internalLinkingSuggestions)
+      ? flattenStringArray(record.internalLinkingSuggestions)
+      : [flattenToString(record.internalLinkingSuggestions)];
   }
 
   if (record.competitorInsights !== undefined && !Array.isArray(record.competitorInsights)) {

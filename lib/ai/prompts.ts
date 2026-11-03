@@ -48,7 +48,16 @@ ${websiteSignals ? `Website context: ${websiteSignals}\n` : ""}
 
 Create a pillar-and-cluster structure. The pillar topic is the main article. Supporting topics are shorter articles that link back to it. Internal linking suggestions are practical anchor text ideas.
 
-Return JSON: { pillarTopic, supportingTopics[], searchIntent, priority, internalLinkingSuggestions[] }
+Return JSON with EXACTLY this shape — every value must be a plain string, no nested objects:
+{
+  "pillarTopic": "string — the main pillar article title",
+  "supportingTopics": ["string title", "string title", "string title"],
+  "searchIntent": "informational" | "commercial" | "transactional" | "navigational",
+  "priority": "low" | "medium" | "high",
+  "internalLinkingSuggestions": ["string anchor text idea", "string anchor text idea"]
+}
+
+Each element in supportingTopics and internalLinkingSuggestions must be a plain string, not an object.
 
 ${JSON_RULE}`;
 }
