@@ -238,13 +238,10 @@ export function OnboardingWizard({
             {PLANS.map((option) => {
               const selected = plan === option.id;
               const optionPrice =
-                option.id === "free"
-                  ? "$0"
-                  : cycle === "yearly"
-                    ? `$${option.yearly}`
-                    : `$${option.monthly}`;
-              const optionUnit =
-                option.id === "free" ? "/ forever" : cycle === "yearly" ? "/ year" : "/ month";
+                cycle === "yearly"
+                  ? `$${option.yearly}`
+                  : `$${option.monthly}`;
+              const optionUnit = cycle === "yearly" ? "/ year" : "/ month";
 
               return (
                 <button
