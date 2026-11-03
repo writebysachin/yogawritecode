@@ -6,7 +6,7 @@ import { ArrowLeft, ArrowRight, Check, Loader2 } from "lucide-react";
 import { completeOnboarding } from "@/app/onboarding/actions";
 import type { BillingCycle } from "@/lib/dodo";
 
-type PlanId = "free" | "starter" | "pro" | "scale";
+type PlanId = "starter" | "pro" | "scale";
 
 const GOALS = [
   {
@@ -40,14 +40,6 @@ const PLANS: Array<{
   features: string[];
   popular?: boolean;
 }> = [
-  {
-    id: "free",
-    name: "Free",
-    blurb: "Try the full workflow",
-    monthly: 0,
-    yearly: 0,
-    features: ["50 AI credits", "1 active project", "Full 5-step workflow"],
-  },
   {
     id: "starter",
     name: "Starter",
@@ -106,15 +98,14 @@ export function OnboardingWizard({
   const [step, setStep] = useState<0 | 1>(0);
   const [goal, setGoal] = useState("");
   const [plan, setPlan] = useState<PlanId>(
-    initialPlan && PLAN_IDS.has(initialPlan) ? (initialPlan as PlanId) : "free",
+    initialPlan && PLAN_IDS.has(initialPlan) ? (initialPlan as PlanId) : "starter",
   );
   const [cycle, setCycle] = useState<BillingCycle>(initialCycle ?? "monthly");
 
   const selectedPlan = PLANS.find((item) => item.id === plan) ?? PLANS[0];
-  const isPaid = plan !== "free";
   const price = cycle === "yearly" ? selectedPlan.yearly : selectedPlan.monthly;
-  const unit = plan === "free" ? "/ forever" : cycle === "yearly" ? "/ year" : "/ month";
-  const submitLabel = isPaid ? `Continue to payment →` : "Start free plan";
+  const unit = cycle === "yearly" ? "/ year" : "/ month";
+  const submitLabel = `Continue to payment →`;
 
   return (
     <form action={completeOnboarding} className="mt-10">
@@ -214,8 +205,7 @@ export function OnboardingWizard({
                 Pick your plan
               </h2>
               <p className="mt-3 max-w-xl text-sm leading-6 text-ink-secondary">
-                Start free, or try any paid plan for 7 days. No card required — you will not be
-                charged today.
+                Pick a plan and get started. No credit card required until you check out.
               </p>
             </div>
 
@@ -291,8 +281,8 @@ export function OnboardingWizard({
                     </span>
                     <span className="text-xs text-ink-muted">{optionUnit}</span>
                   </span>
-                  <span className="mt-1 block text-[11px] font-medium text-success">
-                    {option.id === "free" ? "No card required" : "7-day free trial · pay on next page"}
+                  <span className="mt-1 block text-[11px] font-medium text-ink-muted">
+                    {cycle === "yearly" ? `$${option.yearly} / year` : `$${option.monthly} / month`}
                   </span>
                   <span className="mt-4 block space-y-1 border-t border-line pt-3">
                     {option.features.map((feature) => (
@@ -308,20 +298,12 @@ export function OnboardingWizard({
           </div>
 
           <div className="mt-6 rounded-control bg-surface-subtle px-4 py-3 text-xs leading-5 text-ink-secondary">
-            {isPaid ? (
-              <>
-                You&apos;ll complete your{" "}
-                <span className="font-semibold text-ink">{selectedPlan.name}</span> payment on the
-                next page.{" "}
-                <span className="font-semibold text-ink">{`$${price} ${unit}`}</span> after the
-                7-day free trial.
-              </>
-            ) : (
-              <>
-                You are starting on the <span className="font-semibold text-ink">free plan</span>.
-                50 credits, 1 project, no card. Upgrade anytime.
-              </>
-            )}
+            <>
+              You&apos;ll complete your{" "}
+              <span className="font-semibold text-ink">{selectedPlan.name}</span> payment on the
+              next page.{" "}
+              <span className="font-semibold text-ink">{`$${price} ${unit}`}</span>.
+            </>
           </div>
 
           <div className="mt-6 flex flex-col-reverse gap-3 sm:flex-row sm:items-center sm:justify-between">

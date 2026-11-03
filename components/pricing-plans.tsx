@@ -1,15 +1,8 @@
 "use client";
 
 import { useState } from "react";
-import { ArrowRight, Check, X } from "lucide-react";
+import { ArrowRight, Check } from "lucide-react";
 import type { BillingCycle } from "@/lib/dodo";
-
-const FREE_FEATURES = [
-  { label: "50 AI credits, no card required", included: true },
-  { label: "1 active project", included: true },
-  { label: "Full 5-step workflow", included: true },
-  { label: "View-only exports", included: false },
-] as const;
 
 const STARTER_FEATURES = [
   { label: "200 AI credits / month", included: true },
@@ -40,7 +33,7 @@ function FeatureList({ features }: { features: ReadonlyArray<{ label: string; in
           {feature.included ? (
             <Check size={16} className="mt-0.5 shrink-0 text-success" />
           ) : (
-            <X size={16} className="mt-0.5 shrink-0 text-ink-muted" />
+            <span className="mt-0.5 h-4 w-4 shrink-0" />
           )}
           <span className={feature.included ? "text-ink-secondary" : "text-ink-muted"}>
             {feature.label}
@@ -56,10 +49,8 @@ export function PricingPlans({
   email,
   userId,
   highlightPlan,
-  hideFree,
   initialCycle,
   mode = "checkout",
-  trialNote,
 }: {
   isPro: boolean;
   email?: string;
@@ -68,24 +59,16 @@ export function PricingPlans({
   hideFree?: boolean;
   initialCycle?: BillingCycle;
   mode?: "checkout" | "marketing";
-  /** Overrides the trial line, e.g. for a customer activating a used trial. */
   trialNote?: string;
 }) {
   const [cycle, setCycle] = useState<BillingCycle>(initialCycle ?? "monthly");
 
-  // Marketing traffic logs in (or signs up) first and picks a plan during
-  // onboarding — no card is collected there. In-product upgrades still go to
-  // the internal checkout, which starts the Dodo payment flow.
   const planHref = (plan: string) =>
     mode === "marketing"
       ? `/login?plan=${plan}&cycle=${cycle}`
       : `/dashboard/upgrade?plan=${plan}&cycle=${cycle}`;
-  const freeHref = mode === "marketing" ? "/login" : "/signup";
   const selectLabel = (plan: string) =>
     mode === "marketing" ? "Get started" : `Select ${plan}`;
-  const trialCopy =
-    trialNote ??
-    (mode === "marketing" ? "7-day free trial · no card" : "7-day free trial · card required");
 
   const prices = {
     starter: cycle === "yearly" ? "$86" : "$9",
@@ -124,39 +107,7 @@ export function PricingPlans({
         </div>
       </div>
 
-      <div className={`mt-10 grid gap-6 md:grid-cols-2 ${hideFree ? "xl:grid-cols-3" : "xl:grid-cols-4"}`}>
-        {hideFree ? null : (
-          <section className="flex flex-col rounded-card border border-line bg-surface p-7">
-            <p className="text-xs font-medium uppercase tracking-[0.14em] text-ink-muted">Free</p>
-            <h2 className="mt-2 font-sans text-2xl font-semibold tracking-tight text-ink">Try free</h2>
-            <p className="mt-5 flex items-baseline gap-2">
-              <span className="font-sans text-4xl font-semibold tracking-tight text-ink">$0</span>
-              <span className="text-sm text-ink-muted">/ forever</span>
-            </p>
-            <p className="mt-1 text-xs font-medium text-success">No credit card required</p>
-            <FeatureList features={FREE_FEATURES} />
-            <div className="mt-8 pt-2">
-              {isPro || email || userId ? (
-                <button
-                  type="button"
-                  disabled
-                  className="inline-flex h-11 w-full cursor-default items-center justify-center rounded-field border border-line bg-surface text-sm font-medium text-ink-muted"
-                >
-                  Current Plan
-                </button>
-              ) : (
-                <a
-                  href={freeHref}
-                  className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-field bg-ink px-4 text-sm font-medium text-white transition-colors hover:bg-gray-800"
-                >
-                  Start for free
-                  <ArrowRight size={16} />
-                </a>
-              )}
-            </div>
-          </section>
-        )}
-
+      <div className="mt-10 grid gap-6 md:grid-cols-3">
         <section className={`flex flex-col rounded-card border border-line bg-surface p-7${ring("starter")}`}>
           <p className="text-xs font-medium uppercase tracking-[0.14em] text-ink-muted">Starter</p>
           <h2 className="mt-2 font-sans text-2xl font-semibold tracking-tight text-ink">
@@ -168,9 +119,8 @@ export function PricingPlans({
             </span>
             <span className="text-sm text-ink-muted">{unit}</span>
           </p>
-          <p className="mt-1 text-xs font-medium text-success">{trialCopy}</p>
           <FeatureList features={STARTER_FEATURES} />
-          <div className="mt-8 pt-2">
+          <div className="mt-auto pt-8">
             <a
               href={planHref("starter")}
               className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-field border border-line px-4 text-sm font-medium text-ink transition-colors hover:border-ink"
@@ -195,12 +145,11 @@ export function PricingPlans({
             </span>
             <span className="text-sm text-ink-muted">{unit}</span>
           </p>
-          <p className="mt-1 text-xs font-medium text-success">{trialCopy}</p>
           <p className="mt-5 text-xs font-medium uppercase tracking-[0.14em] text-ink-muted">
             Everything in Starter, plus
           </p>
           <FeatureList features={PRO_FEATURES} />
-          <div className="mt-8 pt-2">
+          <div className="mt-auto pt-8">
             {isPro ? (
               <button
                 type="button"
@@ -232,9 +181,8 @@ export function PricingPlans({
             </span>
             <span className="text-sm text-ink-muted">{unit}</span>
           </p>
-          <p className="mt-1 text-xs font-medium text-success">{trialCopy}</p>
           <FeatureList features={SCALE_FEATURES} />
-          <div className="mt-8 pt-2">
+          <div className="mt-auto pt-8">
             <a
               href={planHref("scale")}
               className="inline-flex h-11 w-full items-center justify-center gap-2 rounded-field border border-line px-4 text-sm font-medium text-ink transition-colors hover:border-ink"
@@ -247,8 +195,7 @@ export function PricingPlans({
       </div>
 
       <p className="mx-auto mt-8 max-w-2xl text-center text-xs leading-5 text-ink-muted">
-        Refer a founder: you both get 1 free month, capped at 3 free months per account. Add a
-        card anytime for +100 bonus credits — trials never charge without confirmation.
+        Secure payments by Dodo Payments. Cancel anytime.
       </p>
     </div>
   );

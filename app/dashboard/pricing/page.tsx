@@ -79,16 +79,12 @@ export default async function PricingPage({
       />
       {isActivating ? (
         <p className="mt-4 rounded-control bg-brand-soft/40 px-4 py-2.5 text-sm font-medium text-brand">
-          Your {PLAN_NAMES[highlightPlan!]} trial has ended. Activate it below to keep Pro features —
+          Your {PLAN_NAMES[highlightPlan!]} plan has ended. Activate it below to keep Pro features —
           pick monthly or yearly, then check out.
         </p>
       ) : highlightPlan ? (
         <p className="mt-4 rounded-control bg-brand-soft/40 px-4 py-2.5 text-sm font-medium text-brand">
           Continuing with {PLAN_NAMES[highlightPlan]} — pick monthly or yearly below to check out.
-        </p>
-      ) : isNew ? (
-        <p className="mt-4 rounded-control bg-brand-soft/40 px-4 py-2.5 text-sm font-medium text-brand">
-          Welcome — pick a plan to start your 7-day free trial, or explore free first. No card required.
         </p>
       ) : null}
 
@@ -154,9 +150,7 @@ export default async function PricingPage({
           email={userData.user?.email ?? undefined}
           userId={userData.user?.id ?? undefined}
           highlightPlan={highlightPlan}
-          hideFree={!isNew}
           initialCycle={initialCycle}
-          trialNote={trialNote}
         />
       </div>
 

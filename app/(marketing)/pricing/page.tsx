@@ -21,8 +21,7 @@ export default function PricingPage() {
             Start free. Upgrade when your pipeline pays for itself. Cancel anytime.
           </p>
           <p className="mt-3 max-w-xl text-sm text-ink-muted">
-            Free includes 50 credits with no credit card. Every paid plan starts with a 7-day free
-            trial — no card required. Log in to pick a plan and set up your workspace.
+            Simple, transparent pricing. No free plan, no trials — pick a plan and get started. Cancel anytime.
           </p>
 
           <div className="mt-10">

@@ -248,7 +248,7 @@ export default async function HomePage() {
                   href="/signup"
                   className="inline-flex items-center gap-2 rounded-[10px] bg-brand px-5 py-3 text-sm font-semibold text-white shadow-pop transition hover:-translate-y-0.5 hover:bg-brand-hover"
                 >
-                  Try it free <span aria-hidden="true">→</span>
+                  Start free <span aria-hidden="true">→</span>
                 </Link>
               )}
               <a
@@ -258,6 +258,9 @@ export default async function HomePage() {
                 See how it works
               </a>
             </div>
+            {!data.user && (
+              <p className="mt-3 text-xs text-ink-muted">No credit card required</p>
+            )}
             <WorkflowPreview />
           </div>
         </section>
