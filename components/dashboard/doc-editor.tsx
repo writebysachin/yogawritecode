@@ -120,6 +120,7 @@ export function DocEditor({
   const [mode, setMode] = useState<"write" | "preview">("write");
   const [title, setTitle] = useState(initialTitle);
   const [values, setValues] = useState<string[]>(sections.map((s) => s.content));
+  const [headings, setHeadings] = useState<string[]>(sections.map((s) => s.heading));
   const [busy, setBusy] = useState<number | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
   const [copied, setCopied] = useState(false);
@@ -128,7 +129,7 @@ export function DocEditor({
   const [pending, startTransition] = useTransition();
 
   const current = (): DocSection[] =>
-    sections.map((s, i) => ({ ...s, content: values[i] ?? "" }));
+    sections.map((s, i) => ({ ...s, heading: headings[i] ?? s.heading, content: values[i] ?? "" }));
 
   const liveMarkdown = useMemo(
     () => toMarkdown(title, current()),
@@ -223,7 +224,7 @@ export function DocEditor({
         type="hidden"
         name="meta"
         value={JSON.stringify(
-          sections.map(({ heading, purpose, points }) => ({ heading, purpose, points }))
+          sections.map(({ purpose, points }, i) => ({ heading: headings[i] ?? sections[i].heading, purpose, points }))
         )}
       />
       {sections.map((_, i) => (
@@ -317,7 +318,7 @@ export function DocEditor({
                 href={`#doc-section-${i}`}
                 className="rounded-control border border-line px-2.5 py-1 text-xs font-medium text-ink-secondary transition-colors hover:border-brand hover:text-brand"
               >
-                {String(i + 1).padStart(2, "0")} · {s.heading || "Untitled"}
+                {String(i + 1).padStart(2, "0")} · {headings[i] || "Untitled"}
               </a>
             ))}
           </nav>
@@ -343,9 +344,14 @@ export function DocEditor({
                   {String(i + 1).padStart(2, "0")}
                 </span>
                 <div className="min-w-0 flex-1">
-                  <h2 className="font-sans text-lg font-semibold tracking-tight text-ink">
-                    {s.heading}
-                  </h2>
+                  <input
+                    value={headings[i] ?? s.heading}
+                    onChange={(e) =>
+                      setHeadings((old) => old.map((h, idx) => (idx === i ? e.target.value : h)))
+                    }
+                    placeholder="Section heading"
+                    className="font-sans w-full border-0 bg-transparent text-lg font-semibold tracking-tight text-ink focus:outline-none"
+                  />
                   <span
                     className={
                       words > 0
@@ -413,7 +419,7 @@ export function DocEditor({
                   </span>
                   <div className="min-w-0 flex-1">
                     <h2 className="font-sans text-lg font-semibold tracking-tight text-ink">
-                      {s.heading}
+                      {headings[i] || s.heading}
                     </h2>
                     {s.purpose ? <p className="mt-1 text-xs leading-5 text-ink-muted">{s.purpose}</p> : null}
                     {s.points && s.points.length > 0 ? (
