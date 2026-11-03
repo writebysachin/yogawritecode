@@ -47,9 +47,13 @@ export default async function SignupPage({
       </p>
       {planLabel ? (
         <p className="mt-3 rounded-control bg-brand-soft/40 px-3 py-2 text-sm font-medium text-brand">
-          You&apos;re starting the {planLabel} trial — 7 days free, no card required.
+          You&apos;re signing up for {planLabel} — complete payment on the next step.
         </p>
-      ) : null}
+      ) : (
+        <p className="mt-3 rounded-control bg-surface-subtle px-3 py-2 text-sm text-ink-secondary">
+          Start with 50 free credits — no credit card required.
+        </p>
+      )}
 
       <div className="mt-5">
         <FormError message={friendlyAuthError(error)} />
