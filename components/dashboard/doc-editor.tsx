@@ -310,7 +310,15 @@ export function DocEditor({
         />
 
         {sections.length > 1 ? (
-          <nav aria-label="Sections" className="mt-6 flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden">
+          <nav
+            aria-label="Sections"
+            className="mt-6 flex gap-2 overflow-x-auto pb-1 [scrollbar-width:none] [&::-webkit-scrollbar]:hidden"
+            onWheel={(e) => {
+              if (e.deltaY === 0) return;
+              e.preventDefault();
+              e.currentTarget.scrollLeft += e.deltaY;
+            }}
+          >
             {sections.map((s, i) => (
               <a
                 key={`nav-${s.heading}-${i}`}
