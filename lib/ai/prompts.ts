@@ -85,20 +85,26 @@ ${JSON_RULE}`;
 }
 
 export function articleOutlinePrompt(
-  ctx: { opportunityTitle: string },
+  ctx: {
+    opportunityTitle: string;
+    opportunityDescription?: string;
+    companySummary?: string;
+    targetAudience?: string;
+  },
   websiteSignals?: string,
 ) {
-  return `You are creating an article outline that a writer can follow section by section.
+  return `You are creating a detailed article outline that a writer can follow section by section.
 
 Article topic: ${ctx.opportunityTitle}
-${websiteSignals ? `Website context: ${websiteSignals}\n` : ""}
-
+${ctx.opportunityDescription ? `Full context: ${ctx.opportunityDescription}\n` : ""}${ctx.companySummary ? `Business: ${ctx.companySummary}\n` : ""}${ctx.targetAudience ? `Target reader: ${ctx.targetAudience}\n` : ""}${websiteSignals ? `Website signals: ${websiteSignals}\n` : ""}
 Rules for a good outline:
-- H1 is specific and keyword-rich (not clickbait)
-- Each section has a clear purpose (what the reader will know after reading it)
-- Points under each section are concrete and actionable — not vague
-- No filler sections like "Introduction" or "Conclusion" without substance
-- 5–8 sections is ideal
+- title is the internal working title (concise, keyword-rich)
+- h1 is the exact published headline — specific, keyword-rich, not clickbait
+- Each section heading is concrete (e.g. "How to reduce churn in 30 days" not "Tips")
+- purpose explains what the reader will understand after reading that section (one sentence)
+- points are specific, actionable sub-items the writer must cover — not vague bullets
+- No filler sections like "Introduction" or "Conclusion" without real substance
+- 5–8 sections is ideal; never fewer than 4
 
 Return JSON: { title, h1, sections: [{ heading, purpose, points[] }] }
 

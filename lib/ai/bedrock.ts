@@ -361,7 +361,15 @@ export class BedrockAIProvider implements AIProvider {
     const signals = await this.getSignals(input.websiteUrl);
     return structured(
       ArticleOutlineSchema,
-      articleOutlinePrompt(input, JSON.stringify(signals)),
+      articleOutlinePrompt(
+        {
+          opportunityTitle: input.opportunityTitle,
+          opportunityDescription: input.opportunityDescription,
+          companySummary: input.companySummary,
+          targetAudience: input.targetAudience,
+        },
+        JSON.stringify(signals),
+      ),
       3000,
     );
   }
