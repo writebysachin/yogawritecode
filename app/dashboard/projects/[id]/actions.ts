@@ -34,8 +34,9 @@ type OpportunityRow = {
   description: string;
 };
 
-function fail(projectId: string, message: string): never {
-  redirect(`/dashboard/projects/${projectId}?error=${encodeURIComponent(message)}`);
+function fail(projectId: string, message: string, returnTo?: string): never {
+  const base = returnTo ?? `/dashboard/projects/${projectId}`;
+  redirect(`${base}?error=${encodeURIComponent(message)}`);
 }
 
 function messageFrom(error: unknown, fallback: string) {
@@ -121,30 +122,13 @@ function revalidateWorkflow(projectId: string) {
 
 export async function analyzeWebsite(formData: FormData): Promise<void> {
   const projectId = String(formData.get("projectId") ?? "");
+  const returnTo = String(formData.get("returnTo") ?? "");
+  const errorDest = returnTo.startsWith("/") && !returnTo.startsWith("//") ? returnTo : undefined;
   const { supabase, project, user } = await loadProject(projectId);
-
-  // Do not create duplicate analyses when a complete analysis already exists.
-  // A previous run may have saved the analysis but failed before saving the
-  // opportunities, so only the presence of opportunities makes this a no-op.
-  const { data: existingOpportunities, error: existingOpportunityError } = await supabase
-    .from("content_opportunities")
-    .select("id")
-    .eq("project_id", projectId)
-    .limit(1);
-
-  if (existingOpportunityError) {
-    fail(projectId, `Could not check existing opportunities: ${existingOpportunityError.message}`);
-  }
-  if ((existingOpportunities ?? []).length > 0) {
-    revalidateWorkflow(projectId);
-    redirect(`/dashboard/projects/${projectId}`);
-  }
 
   let result: WebsiteAnalysisResult;
   const charged = await takeCredit(supabase, user, projectId, "analysis");
   try {
-    // Use the same bounded extractor as the mock provider so the prompt is
-    // grounded in the page title, description, headings, and key terms.
     const signals = await extractWebsiteSignals(project.website_url);
     const websiteText = signals.textLength
       ? `${signals.title}. ${signals.metaDescription}. Headings: ${signals.headings.join("; ")}. Key terms: ${signals.topTerms.join(", ")}`
@@ -157,7 +141,13 @@ export async function analyzeWebsite(formData: FormData): Promise<void> {
   } catch (error) {
     console.error("[analyzeWebsite] AI generation failed", error);
     if (charged) await refundCredit(supabase, user.id, "analysis");
-    fail(projectId, messageFrom(error, "We couldn't analyze this website right now. Try again."));
+    const msg = error instanceof Error ? error.message : "";
+    const friendly = msg.includes("validation failed")
+      ? "The website content couldn't be read clearly. Try again or check the URL is publicly accessible."
+      : msg.includes("timed out")
+        ? "The request timed out. Please try again in a moment."
+        : "We couldn't analyse this website right now. Please try again.";
+    fail(projectId, friendly, errorDest);
   }
 
   const { data: analysis, error: analysisError } = await supabase
@@ -179,7 +169,7 @@ export async function analyzeWebsite(formData: FormData): Promise<void> {
   if (analysisError || !analysis) {
     console.error("[analyzeWebsite] analysis insert failed", analysisError);
     if (charged) await refundCredit(supabase, user.id, "analysis");
-    fail(projectId, `Could not save the analysis: ${analysisError?.message ?? "unknown database error"}`);
+    fail(projectId, "The analysis completed but couldn't be saved. Please try again.", errorDest);
   }
 
   const opportunityRows = await Promise.all(
@@ -203,8 +193,6 @@ export async function analyzeWebsite(formData: FormData): Promise<void> {
     .insert(opportunityRows);
 
   if (opportunityError) {
-    // Older databases may not have the target_keywords column yet (migration
-    // 20261010000000 not applied). Retry without it so analysis never breaks.
     const missingKeywordsColumn = /target_keywords|column.*does not exist/i.test(
       opportunityError.message,
     );
@@ -217,15 +205,13 @@ export async function analyzeWebsite(formData: FormData): Promise<void> {
         await supabase.from("website_analyses").delete().eq("id", analysis.id);
         console.error("[analyzeWebsite] opportunity insert failed", retryError);
         if (charged) await refundCredit(supabase, user.id, "analysis");
-        fail(projectId, `Could not save content opportunities: ${retryError.message}`);
+        fail(projectId, "The opportunities couldn't be saved. Please try again.", errorDest);
       }
     } else {
-      // Do not leave an apparently successful analysis behind when its required
-      // workflow output could not be saved.
       await supabase.from("website_analyses").delete().eq("id", analysis.id);
       console.error("[analyzeWebsite] opportunity insert failed", opportunityError);
       if (charged) await refundCredit(supabase, user.id, "analysis");
-      fail(projectId, `Could not save content opportunities: ${opportunityError.message}`);
+      fail(projectId, "The opportunities couldn't be saved. Please try again.", errorDest);
     }
   }
 
