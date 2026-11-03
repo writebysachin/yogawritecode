@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { JsonLd } from "@/components/json-ld";
 import { MarketingCta } from "@/components/marketing/marketing-cta";
@@ -209,7 +210,14 @@ function SectionIntro({
 export default async function HomePage() {
   const supabase = await createSupabaseServerClient();
   const { data } = await supabase.auth.getUser();
-  if (data.user) redirect("/dashboard");
+  if (data.user) {
+    // On mobile don't silently redirect — show the marketing page with a
+    // prominent "Go to Dashboard" button so the tap is intentional.
+    const headersList = await headers();
+    const ua = headersList.get("user-agent") ?? "";
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(ua);
+    if (!isMobile) redirect("/dashboard");
+  }
   return (
     <div className="min-h-screen overflow-x-clip bg-surface font-sans text-ink">
       <main>
@@ -228,12 +236,21 @@ export default async function HomePage() {
               Paste a URL. Get real content opportunities pulled from what your business actually does — then a brief and outline for each one.
             </p>
             <div className="mt-8 flex flex-wrap items-center justify-center gap-3">
-              <Link
-                href="/signup"
-                className="inline-flex items-center gap-2 rounded-[10px] bg-brand px-5 py-3 text-sm font-semibold text-white shadow-pop transition hover:-translate-y-0.5 hover:bg-brand-hover"
-              >
-                Try it free <span aria-hidden="true">→</span>
-              </Link>
+              {data.user ? (
+                <Link
+                  href="/dashboard"
+                  className="inline-flex items-center gap-2 rounded-[10px] bg-brand px-5 py-3 text-sm font-semibold text-white shadow-pop transition hover:-translate-y-0.5 hover:bg-brand-hover"
+                >
+                  Go to Dashboard <span aria-hidden="true">→</span>
+                </Link>
+              ) : (
+                <Link
+                  href="/signup"
+                  className="inline-flex items-center gap-2 rounded-[10px] bg-brand px-5 py-3 text-sm font-semibold text-white shadow-pop transition hover:-translate-y-0.5 hover:bg-brand-hover"
+                >
+                  Try it free <span aria-hidden="true">→</span>
+                </Link>
+              )}
               <a
                 href="#how"
                 className="rounded-[10px] border border-line bg-surface px-5 py-3 text-sm font-semibold text-ink transition hover:-translate-y-0.5 hover:border-line-strong"

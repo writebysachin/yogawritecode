@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
+import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 import { AuthShell } from "@/components/auth/auth-shell";
 import { GoogleAuthButton } from "@/components/auth/google-auth-button";
@@ -36,7 +37,32 @@ export default async function LoginPage({
       nextParam && nextParam.startsWith("/") && !nextParam.startsWith("//")
         ? nextParam
         : "/dashboard";
-    redirect(safeNext);
+
+    // On mobile, don't auto-redirect — show a button instead so the user
+    // can tap through deliberately rather than being bounced away.
+    const headersList = await headers();
+    const ua = headersList.get("user-agent") ?? "";
+    const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(ua);
+    if (!isMobile) redirect(safeNext);
+
+    return (
+      <AuthShell>
+        <h1 className="font-sans text-2xl font-semibold tracking-tight text-ink">
+          You&apos;re signed in
+        </h1>
+        <p className="mt-2 text-sm text-ink-secondary">
+          Tap below to open your dashboard.
+        </p>
+        <div className="mt-6">
+          <Link
+            href={safeNext}
+            className="inline-flex w-full items-center justify-center gap-2 rounded-[10px] bg-brand px-5 py-3 text-sm font-semibold text-white shadow-pop transition hover:-translate-y-0.5 hover:bg-brand-hover"
+          >
+            Go to Dashboard <span aria-hidden="true">→</span>
+          </Link>
+        </div>
+      </AuthShell>
+    );
   }
 
   const signupParams = new URLSearchParams();
