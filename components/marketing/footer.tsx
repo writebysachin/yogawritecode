@@ -33,11 +33,14 @@ const footerLinks = [
       { label: "Blog", href: "/resources/blog" },
       { label: "FAQs", href: "/resources/faqs" },
       { label: "Pricing", href: "/pricing" },
+      { label: "Content Topics", href: "/ai-content-topics" },
+    ],
+  },
+  {
+    title: "Company",
+    links: [
       { label: "About", href: "/about" },
       { label: "Contact", href: "/contact" },
-      { label: "Content Topics", href: "/ai-content-topics" },
-      { label: "AI Info", href: "/about-for-ai" },
-      { label: "Site Map", href: "/sitemap-page" },
     ],
   },
   {
@@ -118,6 +121,8 @@ export function SiteFooter() {
               </a>
               <Link href="/terms" className="transition-colors hover:text-ink">Terms</Link>
               <Link href="/privacy" className="transition-colors hover:text-ink">Privacy</Link>
+              <Link href="/about-for-ai" className="transition-colors hover:text-ink">AI Info</Link>
+              <Link href="/sitemap-page" className="transition-colors hover:text-ink">Site Map</Link>
             </div>
           </div>
         </div>

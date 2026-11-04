@@ -17,6 +17,7 @@ import {
   reserveCredit,
   type CreditStep,
 } from "@/lib/credits";
+import { runWithAiContext } from "@/lib/posthog-server";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 import { fetchKeywordGaps } from "@/lib/tavily";
 
@@ -134,10 +135,12 @@ export async function analyzeWebsite(formData: FormData): Promise<void> {
       ? `${signals.title}. ${signals.metaDescription}. Headings: ${signals.headings.join("; ")}. Key terms: ${signals.topTerms.join(", ")}`
       : null;
 
-    result = await getAIProvider().analyzeWebsite({
-      websiteUrl: project.website_url,
-      websiteText,
-    });
+    result = await runWithAiContext({ userId: user.id, projectId }, () =>
+      getAIProvider().analyzeWebsite({
+        websiteUrl: project.website_url,
+        websiteText,
+      })
+    );
   } catch (error) {
     console.error("[analyzeWebsite] AI generation failed", error);
     if (charged) await refundCredit(supabase, user.id, "analysis");
@@ -240,8 +243,9 @@ export async function generateCluster(formData: FormData): Promise<void> {
   let result: TopicClusterResult;
   const charged = await takeCredit(supabase, user, projectId, "cluster");
   try {
-    result = await getAIProvider().generateCluster(
-      await buildContext(supabase, project, opportunity),
+    const clusterContext = await buildContext(supabase, project, opportunity);
+    result = await runWithAiContext({ userId: user.id, projectId }, () =>
+      getAIProvider().generateCluster(clusterContext)
     );
   } catch (error) {
     console.error("[generateCluster] AI generation failed", error);
@@ -293,8 +297,9 @@ export async function generateBrief(formData: FormData): Promise<void> {
   let result: SeoBriefResult;
   const charged = await takeCredit(supabase, user, projectId, "brief");
   try {
-    result = await getAIProvider().generateBrief(
-      await buildContext(supabase, project, opportunity),
+    const opportunityContext = await buildContext(supabase, project, opportunity);
+    result = await runWithAiContext({ userId: user.id, projectId }, () =>
+      getAIProvider().generateBrief(opportunityContext)
     );
   } catch (error) {
     console.error("[generateBrief] AI generation failed", error);
@@ -360,10 +365,12 @@ export async function generateOutline(formData: FormData): Promise<void> {
   let result: ArticleOutlineResult;
   const charged = await takeCredit(supabase, user, projectId, "outline");
   try {
-    result = await getAIProvider().generateOutline({
-      ...context,
-      opportunityDescription: `${context.opportunityDescription}${briefContext}`,
-    });
+    result = await runWithAiContext({ userId: user.id, projectId }, () =>
+      getAIProvider().generateOutline({
+        ...context,
+        opportunityDescription: `${context.opportunityDescription}${briefContext}`,
+      })
+    );
   } catch (error) {
     console.error("[generateOutline] AI generation failed", error);
     if (charged) await refundCredit(supabase, user.id, "outline");

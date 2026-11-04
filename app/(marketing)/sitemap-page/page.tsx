@@ -13,6 +13,11 @@ const sections = [
     links: [
       { label: "Home", href: "/" },
       { label: "Pricing", href: "/pricing" },
+    ],
+  },
+  {
+    title: "Company",
+    links: [
       { label: "About", href: "/about" },
       { label: "Contact", href: "/contact" },
     ],
@@ -52,6 +57,14 @@ const sections = [
     ],
   },
   {
+    title: "AI & Reference",
+    links: [
+      { label: "About for AI Systems", href: "/about-for-ai" },
+      { label: "Content Topics", href: "/ai-content-topics" },
+      { label: "llms.txt", href: "/llms.txt", external: true },
+    ],
+  },
+  {
     title: "Legal",
     links: [
       { label: "Terms of Service", href: "/terms" },
@@ -86,12 +99,21 @@ export default function SitemapPage() {
             <ul className="mt-3 space-y-2">
               {section.links.map((link) => (
                 <li key={link.href}>
-                  <Link
-                    href={link.href}
-                    className="text-sm text-ink-secondary transition-colors hover:text-brand"
-                  >
-                    {link.label}
-                  </Link>
+                  {"external" in link && link.external ? (
+                    <a
+                      href={link.href}
+                      className="text-sm text-ink-secondary transition-colors hover:text-brand"
+                    >
+                      {link.label}
+                    </a>
+                  ) : (
+                    <Link
+                      href={link.href}
+                      className="text-sm text-ink-secondary transition-colors hover:text-brand"
+                    >
+                      {link.label}
+                    </Link>
+                  )}
                 </li>
               ))}
             </ul>

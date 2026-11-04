@@ -4,6 +4,7 @@ import {
   type BedrockRuntimeClientConfig,
 } from "@aws-sdk/client-bedrock-runtime";
 import type { ZodType } from "zod";
+import { captureAiGeneration } from "@/lib/posthog-server";
 import { extractWebsiteSignals } from "./extract";
 import {
   articleOutlinePrompt,
@@ -54,6 +55,7 @@ async function invokeModel(
   userPrompt: string,
   maxTokens: number,
   systemPrompt?: string,
+  spanName?: string,
 ): Promise<string> {
   const body: Record<string, unknown> = {
     anthropic_version: "bedrock-2023-05-31",
@@ -72,15 +74,44 @@ async function invokeModel(
 
   const controller = new AbortController();
   const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+  const startMs = Date.now();
 
   try {
     const response = await client.send(command, { abortSignal: controller.signal });
+    const latencySeconds = (Date.now() - startMs) / 1000;
+
     const responseBody = JSON.parse(new TextDecoder().decode(response.body)) as {
       content?: Array<{ text?: string }>;
+      usage?: { input_tokens?: number; output_tokens?: number };
     };
 
-    return responseBody.content?.[0]?.text?.trim() ?? "";
+    const text = responseBody.content?.[0]?.text?.trim() ?? "";
+
+    captureAiGeneration({
+      spanName: spanName ?? "bedrock_invoke",
+      model: modelId(),
+      inputPrompt: userPrompt,
+      outputText: text,
+      inputTokens: responseBody.usage?.input_tokens,
+      outputTokens: responseBody.usage?.output_tokens,
+      latencySeconds,
+    });
+
+    return text;
   } catch (error) {
+    const latencySeconds = (Date.now() - startMs) / 1000;
+    const errorMessage = error instanceof Error ? error.message : "Unknown error";
+
+    captureAiGeneration({
+      spanName: spanName ?? "bedrock_invoke",
+      model: modelId(),
+      inputPrompt: userPrompt,
+      outputText: "",
+      latencySeconds,
+      isError: true,
+      error: errorMessage,
+    });
+
     if (error instanceof Error && error.name === "AbortError") {
       throw new Error("The AI request timed out. Please try again.");
     }
@@ -95,17 +126,18 @@ async function invokeModel(
  * workflow provider. Keep this function independent of BedrockAIProvider so
  * provider methods can call it without recursion.
  */
-export async function invokeBedrock(prompt: string, maxTokens = 2048): Promise<string> {
-  return invokeModel(prompt, maxTokens);
+export async function invokeBedrock(prompt: string, maxTokens = 2048, spanName?: string): Promise<string> {
+  return invokeModel(prompt, maxTokens, undefined, spanName);
 }
 
-export async function generateWithBedrock(options: GenerateOptions): Promise<string> {
-  if (typeof options === "string") return invokeModel(options, 2048);
+export async function generateWithBedrock(options: GenerateOptions, spanName?: string): Promise<string> {
+  if (typeof options === "string") return invokeModel(options, 2048, undefined, spanName);
 
   return invokeModel(
     options.user,
     options.maxTokens ?? 2048,
     options.system,
+    spanName,
   );
 }
 
@@ -288,6 +320,7 @@ async function structured<T>(
   schema: ZodType<T>,
   prompt: string,
   maxTokens: number,
+  spanName?: string,
 ): Promise<T> {
   let lastIssue = "The AI response did not match the expected format.";
 
@@ -298,7 +331,7 @@ async function structured<T>(
         : "\nThe previous response was invalid. Return one valid JSON object and no commentary.";
 
     try {
-      const raw = await invokeBedrock(`${prompt}${retryInstruction}`, maxTokens);
+      const raw = await invokeBedrock(`${prompt}${retryInstruction}`, maxTokens, spanName);
       const candidate = normalizeStructuredValue(JSON.parse(extractJsonObject(raw)));
       const parsed = schema.safeParse(candidate);
       if (parsed.success) return parsed.data;
@@ -336,6 +369,7 @@ export class BedrockAIProvider implements AIProvider {
       WebsiteAnalysisSchema,
       websiteAnalysisPrompt(input.websiteUrl, websiteText),
       4000,
+      "analyzeWebsite",
     );
   }
 
@@ -345,6 +379,7 @@ export class BedrockAIProvider implements AIProvider {
       TopicClusterSchema,
       topicClusterPrompt(input, JSON.stringify(signals)),
       2000,
+      "generateCluster",
     );
   }
 
@@ -354,6 +389,7 @@ export class BedrockAIProvider implements AIProvider {
       SeoBriefSchema,
       seoBriefPrompt(input, JSON.stringify(signals)),
       3000,
+      "generateBrief",
     );
   }
 
@@ -371,6 +407,7 @@ export class BedrockAIProvider implements AIProvider {
         JSON.stringify(signals),
       ),
       3000,
+      "generateOutline",
     );
   }
 }

@@ -68,7 +68,7 @@ export async function generateSection(input: SectionInput): Promise<string> {
     : `Business context: ${signals.host}.`;
 
   for (let attempt = 0; attempt < 2; attempt++) {
-    const raw = await generateWithBedrock({ user: promptFor(input, signalsText), maxTokens: 1500 });
+    const raw = await generateWithBedrock({ user: promptFor(input, signalsText), maxTokens: 1500 }, "generateSection");
     try {
       const cleaned = raw.replace(/^```(?:json)?/i, "").replace(/```$/, "").trim();
       const parsed = SectionDraftSchema.safeParse(JSON.parse(cleaned));

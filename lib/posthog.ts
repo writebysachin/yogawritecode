@@ -37,3 +37,9 @@ export function capturePageView() {
   if (!initialized || typeof window === "undefined") return;
   posthog.capture("$pageview", { $current_url: window.location.href });
 }
+
+/** Capture a named event — no-op until PostHog is initialized (i.e. consent granted). */
+export function captureEvent(event: string, properties?: Record<string, unknown>) {
+  if (!initialized || typeof window === "undefined") return;
+  posthog.capture(event, properties);
+}

@@ -4,5 +4,13 @@
   "plugin": ["@dodopayments/opencode-plugin"],
   "skills": {
     "paths": ["node_modules/@dodopayments/opencode-plugin/skills"]
+  },
+  "mcp": {
+    "servers": {
+      "posthog": {
+        "type": "remote",
+        "url": "https://mcp.posthog.com/mcp"
+      }
+    }
   }
 }

@@ -27,6 +27,9 @@
 | 2026-11-02 | BedrockAIProvider signals cache | Website fetched once per provider instance, not once per workflow step |
 | 2026-11-02 | `/checkout` page deleted | Was a public marketing page — all payments now go through /dashboard/upgrade |
 | 2026-11-02 | Absolute OG image URLs | LinkedIn/Facebook/Slack require absolute URLs, relative paths don't work |
+| 2026-11-04 | Bedrock API key rotated to `52rl-at-555659632532` | Previous key stopped authenticating; same AWS account (555659632532) |
+| 2026-11-04 | Bedrock key wired into OpenCode CLI | `AWS_BEARER_TOKEN_BEDROCK` + `AWS_REGION=ap-southeast-2` as user env vars, so `opencode` runs Claude on Bedrock |
+| 2026-11-04 | OpenCode Bedrock model list restricted to what the account can invoke | Account has access only to `au.anthropic.claude-sonnet-4-6`, `au.anthropic.claude-opus-4-6-v1`, `au.anthropic.claude-haiku-4-5-20251001-v1:0` and `amazon.nova-pro-v1:0`; bare model IDs are aliased to the `au.` inference profile |
 
 ---
 
@@ -72,6 +75,7 @@
 | `AWS_REGION` | `ap-southeast-2` |
 | `AWS_ACCESS_KEY_ID` | Bedrock access key |
 | `AWS_SECRET_ACCESS_KEY` | Bedrock secret key |
+| `AWS_BEARER_TOKEN_BEDROCK` | Bedrock API key (`ABSK...`, key `52rl-at-555659632532`) — used for auth when present |
 | `BEDROCK_MODEL_ID` | `au.anthropic.claude-sonnet-4-5-20250929-v1:0` |
 | `RESEND_API_KEY` | Transactional email |
 | `RESEND_FROM_EMAIL` | `Yoga Write Code <hello@yogawritecode.com>` |
