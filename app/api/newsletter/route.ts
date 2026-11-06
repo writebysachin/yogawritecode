@@ -45,14 +45,23 @@ export async function POST(request: Request) {
         headers: { "content-type": "application/x-www-form-urlencoded" },
         body,
         cache: "no-store",
+        redirect: "manual",
         signal: AbortSignal.timeout(10_000),
       },
     );
 
-    if (!upstream.ok) {
-      console.error(`[newsletter] Substack responded ${upstream.status}`);
+    // Substack returns a 302 redirect to the welcome page on success.
+    // Following that redirect lands on a 404, so we treat 3xx as success.
+    const isSuccess = upstream.status >= 200 && upstream.status < 400;
+    if (!isSuccess) {
+      // Try to surface a meaningful message from Substack's error payload.
+      const upstreamJson = await upstream.json().catch(() => null) as
+        | { errors?: Array<{ msg?: string }> }
+        | null;
+      const substackMsg = upstreamJson?.errors?.[0]?.msg;
+      console.error(`[newsletter] Substack responded ${upstream.status}`, substackMsg);
       return NextResponse.json(
-        { error: "Couldn't sign you up right now. Please try again." },
+        { error: substackMsg ?? "Couldn't sign you up right now. Please try again." },
         { status: 502 },
       );
     }
