@@ -21,7 +21,7 @@ export function WorkspacePreview() {
     <div className="overflow-hidden rounded-2xl border border-line bg-surface font-sans shadow-pop">
       <div className="flex min-h-[580px] flex-col md:flex-row">
         <aside className="flex w-full shrink-0 flex-row gap-2 overflow-x-auto border-b border-line bg-surface-subtle p-4 md:w-56 md:flex-col md:border-b-0 md:border-r">
-          <div className="flex shrink-0 items-center gap-2 px-2 pb-3 font-bold text-ink">
+          <div className="flex shrink-0 items-center gap-2 px-2 pb-3 font-bold text-ink md:pb-3">
             <Image src="/icon.svg" alt="" width={28} height={28} unoptimized />
             <span className="text-sm font-extrabold uppercase tracking-tight">YWC</span>
           </div>
