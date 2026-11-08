@@ -10,6 +10,14 @@ export const metadata: Metadata = {
 
 const posts = [
   {
+    slug: "technical-seo-priority-tier-list",
+    title: "Technical SEO Priority Tier List: S to E Ranked by Real Impact",
+    description:
+      "Crawl and index blocks are S-tier. Obsessing over a 98→100 Lighthouse score is E-tier. The full ranked breakdown of what technical SEO work actually moves rankings.",
+    date: "November 8, 2026",
+    tag: "Technical SEO",
+  },
+  {
     slug: "technical-seo-tier-list",
     title: "Technical SEO Tier List: What Actually Impacts Google & AI Search",
     description:
