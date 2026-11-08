@@ -3,6 +3,7 @@ import { SignOut } from "./sign-out";
 import { UserProfile } from "./user-profile";
 import { Wordmark } from "./wordmark";
 import { Badge } from "@/components/ui/badge";
+import { QuickSearchButton } from "./quick-search-button";
 
 export function SidebarBody({
   name,
@@ -27,6 +28,7 @@ export function SidebarBody({
         <SettingsNav onNavigate={onNavigate} />
       </div>
       <div className="shrink-0 border-t border-line px-4 py-4">
+        <QuickSearchButton />
         <div className="mb-2 flex items-center justify-between gap-2 px-2">
           <Badge tone={isPro ? "brand" : "neutral"}>{isPro ? "Pro" : "Free"}</Badge>
           <span className="text-xs text-ink-muted">{credits ?? 0} credits</span>

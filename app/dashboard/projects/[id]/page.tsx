@@ -31,7 +31,6 @@ function toStringList(value: unknown): string[] {
       .filter((item) => item.length > 0);
   }
   if (typeof value === "string" && value.trim().length > 0) {
-    // Older rows sometimes store a single string or JSON-encoded array.
     const trimmed = value.trim();
     if (trimmed.startsWith("[")) {
       try {
@@ -79,15 +78,162 @@ function safeDecode(value: string) {
   }
 }
 
-function Section({ id, step, title, children }: { id: string; step: number; title: string; children: ReactNode }) {
+// ── Step progress stepper ────────────────────────────────────────────────────
+
+type StepState = "done" | "active" | "pending";
+
+interface StepDef {
+  label: string;
+  href: string;
+  state: StepState;
+}
+
+function StepProgress({ steps }: { steps: StepDef[] }) {
   return (
-    <section id={id} className="mt-10 scroll-mt-24 rounded-card border border-line bg-surface p-6 sm:p-8">
-      <p className="text-xs font-medium uppercase tracking-[0.14em] text-ink-muted">Step {step} of 5</p>
-      <h2 className="font-sans mt-1 text-xl font-semibold tracking-tight text-ink">{title}</h2>
+    <nav aria-label="Workflow progress" className="mt-6">
+      {/* Desktop: horizontal stepper with connector lines */}
+      <ol className="hidden sm:flex items-center">
+        {steps.map((step, i) => {
+          const isLast = i === steps.length - 1;
+          const connectorDone = step.state === "done";
+
+          return (
+            <li key={step.href} className="flex items-center">
+              <a
+                href={step.href}
+                className={[
+                  "flex items-center gap-2 rounded-full border px-3.5 py-1.5 text-sm font-medium transition-colors",
+                  step.state === "done"
+                    ? "border-brand bg-brand-soft text-brand"
+                    : step.state === "active"
+                      ? "border-brand bg-surface text-brand"
+                      : "border-line bg-surface-subtle text-ink-muted",
+                ].join(" ")}
+              >
+                {/* Step number circle */}
+                <span
+                  className={[
+                    "grid h-5 w-5 shrink-0 place-items-center rounded-full text-[11px] font-bold",
+                    step.state === "done"
+                      ? "bg-brand text-white"
+                      : step.state === "active"
+                        ? "border-2 border-brand bg-surface text-brand"
+                        : "bg-surface-subtle text-ink-muted",
+                  ].join(" ")}
+                  aria-hidden="true"
+                >
+                  {step.state === "done" ? "✓" : i + 1}
+                </span>
+                {step.label}
+              </a>
+
+              {/* Connector */}
+              {!isLast && (
+                <span
+                  className={[
+                    "mx-1.5 h-px w-6 shrink-0 transition-colors",
+                    connectorDone ? "bg-brand" : "bg-line",
+                  ].join(" ")}
+                  aria-hidden="true"
+                />
+              )}
+            </li>
+          );
+        })}
+      </ol>
+
+      {/* Mobile: wrapping pills, no connectors */}
+      <ol className="flex sm:hidden flex-wrap gap-2">
+        {steps.map((step, i) => (
+          <li key={step.href}>
+            <a
+              href={step.href}
+              className={[
+                "flex items-center gap-1.5 rounded-full border px-3 py-1.5 text-xs font-medium transition-colors",
+                step.state === "done"
+                  ? "border-brand bg-brand-soft text-brand"
+                  : step.state === "active"
+                    ? "border-brand bg-surface text-brand"
+                    : "border-line bg-surface-subtle text-ink-muted",
+              ].join(" ")}
+            >
+              <span
+                className={[
+                  "grid h-4 w-4 shrink-0 place-items-center rounded-full text-[10px] font-bold",
+                  step.state === "done"
+                    ? "bg-brand text-white"
+                    : step.state === "active"
+                      ? "border-2 border-brand bg-surface text-brand"
+                      : "bg-surface-subtle text-ink-muted",
+                ].join(" ")}
+                aria-hidden="true"
+              >
+                {step.state === "done" ? "✓" : i + 1}
+              </span>
+              {step.label}
+            </a>
+          </li>
+        ))}
+      </ol>
+    </nav>
+  );
+}
+
+// ── Section card ─────────────────────────────────────────────────────────────
+
+function Section({
+  id,
+  step,
+  title,
+  isActive,
+  isDone,
+  children,
+}: {
+  id: string;
+  step: number;
+  title: string;
+  isActive?: boolean;
+  isDone?: boolean;
+  children: ReactNode;
+}) {
+  return (
+    <section
+      id={id}
+      className={[
+        "mt-10 scroll-mt-24 rounded-card border bg-surface p-6 sm:p-8",
+        isActive ? "border-brand/40" : "border-line",
+      ].join(" ")}
+    >
+      <div className="flex items-center gap-2.5">
+        <span
+          className={[
+            "grid h-6 w-6 shrink-0 place-items-center rounded-full text-xs font-bold",
+            isDone
+              ? "bg-brand text-white"
+              : isActive
+                ? "border-2 border-brand bg-surface text-brand"
+                : "bg-surface-subtle text-ink-muted",
+          ].join(" ")}
+          aria-hidden="true"
+        >
+          {isDone ? "✓" : step}
+        </span>
+        <p
+          className={[
+            "text-xs font-medium uppercase tracking-[0.14em]",
+            isDone ? "text-brand" : isActive ? "text-brand" : "text-ink-muted",
+          ].join(" ")}
+        >
+          Step {step} of 5
+        </p>
+      </div>
+      <h2 className="font-sans mt-1.5 text-xl font-semibold tracking-tight text-ink">{title}</h2>
       <div className="mt-4 max-w-2xl">{children}</div>
     </section>
   );
 }
+
+// ── Data display helpers ─────────────────────────────────────────────────────
 
 function FactRow({ label, value }: { label: string; value: unknown }) {
   return (
@@ -123,6 +269,8 @@ function ListBlock({ label, items }: { label: string; items: unknown }) {
   );
 }
 
+// ── Page ─────────────────────────────────────────────────────────────────────
+
 interface ProjectPageProps {
   params: Promise<{ id: string }>;
   searchParams: Promise<{ error?: string }>;
@@ -136,7 +284,6 @@ export default async function ProjectPage({ params, searchParams }: ProjectPageP
   const { data: project } = await supabase.from("projects").select("*").eq("id", id).single();
   if (!project) notFound();
 
-  // Fetch all data
   const [analysisRes, opportunitiesRes, clusterRes, briefRes, outlineRes] = await Promise.all([
     supabase.from("website_analyses").select("*").eq("project_id", id).order("created_at", { ascending: false }).limit(1).maybeSingle(),
     supabase.from("content_opportunities").select("*").eq("project_id", id).order("opportunity_score", { ascending: false }),
@@ -164,10 +311,35 @@ export default async function ProjectPage({ params, searchParams }: ProjectPageP
     console.error("[project page] workflow query failed", dataError);
   }
 
+  // Derive step states for the stepper
+  const stepStates = (() => {
+    const doneFlags = [
+      !!analysis,
+      opportunities.length > 0,
+      !!cluster,
+      !!brief,
+      !!outline,
+    ];
+    const firstIncomplete = doneFlags.findIndex((d) => !d);
+    return doneFlags.map((done, i): StepState => {
+      if (done) return "done";
+      if (i === firstIncomplete) return "active";
+      return "pending";
+    });
+  })();
+
+  const stepDefs: StepDef[] = [
+    { label: "Analyze",       href: "#analysis",      state: stepStates[0] },
+    { label: "Opportunities", href: "#opportunities",  state: stepStates[1] },
+    { label: "Cluster",       href: "#cluster",        state: stepStates[2] },
+    { label: "Brief",         href: "#brief",          state: stepStates[3] },
+    { label: "Outline",       href: "#outline",        state: stepStates[4] },
+  ];
+
   return (
     <div className="max-w-4xl mx-auto pb-20">
       <PageHeader title={project.name} description={project.website_url} />
-      
+
       {error && (
         <div className="mt-4 p-4 bg-red-50 border border-red-200 rounded-lg">
           <p className="text-sm text-red-700 font-medium">Error: {safeDecode(error)}</p>
@@ -180,34 +352,16 @@ export default async function ProjectPage({ params, searchParams }: ProjectPageP
         </div>
       )}
 
-      {/* Progress Steps — each pill reflects real data state */}
-      <div className="mt-6 flex flex-wrap gap-2">
-        {(
-          [
-            { done: !!analysis,                label: "01 · Analyze",       href: "#analysis" },
-            { done: opportunities.length > 0,  label: "02 · Opportunities", href: "#opportunities" },
-            { done: !!cluster,                 label: "03 · Cluster",       href: "#cluster" },
-            { done: !!brief,                   label: "04 · Brief",         href: "#brief" },
-            { done: !!outline,                 label: "05 · Outline",       href: "#outline" },
-          ] as const
-        ).map(({ done, label, href }) => (
-          <a
-            key={href}
-            href={href}
-            className={`inline-flex items-center gap-1.5 rounded-full px-3 py-1.5 text-sm font-medium transition-colors ${
-              done
-                ? "bg-success-soft text-success hover:bg-success-soft/80"
-                : "bg-surface-subtle text-ink-muted hover:bg-surface-subtle/80"
-            }`}
-          >
-            <span aria-hidden="true">{done ? "✓" : "○"}</span>
-            {label}
-          </a>
-        ))}
-      </div>
+      <StepProgress steps={stepDefs} />
 
-      {/* STEP 1: Analysis */}
-      <Section id="analysis" step={1} title="Website analysis">
+      {/* STEP 1 — Website analysis */}
+      <Section
+        id="analysis"
+        step={1}
+        title="Website analysis"
+        isDone={!!analysis}
+        isActive={stepStates[0] === "active"}
+      >
         {analysis ? (
           <div className="max-w-2xl">
             <FactRow label="Company summary" value={analysis.company_summary} />
@@ -216,18 +370,29 @@ export default async function ProjectPage({ params, searchParams }: ProjectPageP
             <FactRow label="Positioning" value={analysis.positioning} />
           </div>
         ) : (
-          <GenerateButton
-            action={analyzeWebsite}
-            label="Analyze Website"
-            pendingLabel="Analyzing…"
-            hiddenFields={{ projectId: id }}
-          />
+          <div className="rounded-lg border border-brand/20 bg-brand-soft/40 p-5">
+            <p className="mb-4 text-sm text-ink-secondary">
+              Start by analyzing your website. This gives us the context needed for every step that follows.
+            </p>
+            <GenerateButton
+              action={analyzeWebsite}
+              label="Analyze Website"
+              pendingLabel="Analyzing…"
+              hiddenFields={{ projectId: id }}
+            />
+          </div>
         )}
       </Section>
 
-      {/* STEP 2: Opportunities */}
+      {/* STEP 2 — Content opportunities */}
       {analysis && (
-        <Section id="opportunities" step={2} title="Content opportunities">
+        <Section
+          id="opportunities"
+          step={2}
+          title="Content opportunities"
+          isDone={opportunities.length > 0}
+          isActive={stepStates[1] === "active"}
+        >
           {opportunities.length > 0 ? (
             <div className="space-y-4">
               {opportunities.map((opp) => (
@@ -285,9 +450,15 @@ export default async function ProjectPage({ params, searchParams }: ProjectPageP
         </Section>
       )}
 
-      {/* STEP 3: Topic Cluster */}
+      {/* STEP 3 — Topic cluster */}
       {cluster && (
-        <Section id="cluster" step={3} title="Topic cluster">
+        <Section
+          id="cluster"
+          step={3}
+          title="Topic cluster"
+          isDone={!!cluster}
+          isActive={stepStates[2] === "active"}
+        >
           <div>
             <FactRow label="Pillar topic" value={cluster.pillar_topic} />
             <ListBlock label={`Supporting topics (${toStringList(cluster.supporting_topics).length})`} items={cluster.supporting_topics} />
@@ -307,9 +478,15 @@ export default async function ProjectPage({ params, searchParams }: ProjectPageP
         </Section>
       )}
 
-      {/* STEP 4: SEO Brief */}
+      {/* STEP 4 — SEO brief */}
       {brief && (
-        <Section id="brief" step={4} title="SEO brief">
+        <Section
+          id="brief"
+          step={4}
+          title="SEO brief"
+          isDone={!!brief}
+          isActive={stepStates[3] === "active"}
+        >
           <div>
             <FactRow label="Primary keyword" value={brief.primary_keyword} />
             {brief.search_intent ? <FactRow label="Search intent" value={brief.search_intent} /> : null}
@@ -331,9 +508,15 @@ export default async function ProjectPage({ params, searchParams }: ProjectPageP
         </Section>
       )}
 
-      {/* STEP 5: Outline */}
+      {/* STEP 5 — Article outline */}
       {outline && (
-        <Section id="outline" step={5} title="Article outline">
+        <Section
+          id="outline"
+          step={5}
+          title="Article outline"
+          isDone={!!outline}
+          isActive={stepStates[4] === "active"}
+        >
           <div>
             <h3 className="text-xl font-bold leading-snug text-ink">
               {safeText(outline.h1, "Untitled outline")}
@@ -371,23 +554,16 @@ export default async function ProjectPage({ params, searchParams }: ProjectPageP
             })()}
           </div>
 
-          {/* Export actions — matching the image layout */}
           <div className="mt-8 space-y-3">
             <a
               href={`/dashboard/projects/${id}/outline.pdf`}
-              className="flex w-full items-center justify-center gap-2 rounded-card bg-ink px-5 py-3.5 text-sm font-semibold text-white transition hover:bg-gray-800"
-              data-outline-pdf
+              className="flex w-full items-center justify-center gap-2 rounded-card bg-brand px-5 py-3.5 text-sm font-semibold text-white transition hover:bg-brand-hover"
             >
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" aria-hidden="true">
-                <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
-                <polyline points="7 10 12 15 17 10" />
-                <line x1="12" y1="15" x2="12" y2="3" />
-              </svg>
               Download PDF
             </a>
             <a
               href={`/dashboard/projects/${id}/editor`}
-              className="flex w-full items-center justify-center rounded-card border border-line px-5 py-3 text-sm font-semibold text-ink transition hover:bg-surface-subtle"
+              className="flex w-full items-center justify-center rounded-card border border-brand px-5 py-3 text-sm font-semibold text-brand transition hover:bg-brand-soft"
             >
               Open in Editor
             </a>

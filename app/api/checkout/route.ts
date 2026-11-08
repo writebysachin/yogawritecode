@@ -27,6 +27,7 @@ import {
 const bodySchema = z.object({
   plan: z.string().optional(),
   cycle: z.string().optional(),
+  discount_code: z.string().optional(),
 });
 
 type CustomerName = string | undefined;
@@ -59,6 +60,7 @@ export async function POST(request: Request) {
   const parsed = bodySchema.safeParse(payload ?? {});
   const plan = normalizePlan(parsed.success ? parsed.data.plan : undefined);
   const cycle = normalizeCycle(parsed.success ? parsed.data.cycle : undefined);
+  const discountCode = parsed.success ? (parsed.data.discount_code?.trim() || undefined) : undefined;
   const fallbackUrl = buildDodoPlanLink(plan, user.email, user.id, cycle);
 
   const apiKey = process.env.DODO_PAYMENTS_API_KEY?.trim();
@@ -94,6 +96,7 @@ export async function POST(request: Request) {
       product_cart: [{ product_id: productIdFor(plan, cycle), quantity: 1 }],
       customer: { email: user.email, ...(name ? { name } : {}) },
       metadata: { app_user_id: user.id, plan, cycle },
+      ...(discountCode ? { discount_code: discountCode } : {}),
       subscription_data: alreadyTrialed ? { trial_period_days: 0 } : undefined,
       return_url: DODO_SUCCESS_URL,
       cancel_url: new URL("/dashboard/upgrade", request.url).toString(),

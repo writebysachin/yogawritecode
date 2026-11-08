@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
 import { redirect } from "next/navigation";
+import { CommandPaletteMount } from "@/components/dashboard/command-palette-mount";
 import { MobileHeader } from "@/components/dashboard/mobile-header";
 import { Sidebar } from "@/components/dashboard/sidebar";
 import type { ProjectNavItem } from "@/components/dashboard/sidebar-nav";
@@ -45,6 +46,7 @@ export default async function DashboardLayout({
 
   return (
     <div className="min-h-screen">
+      <CommandPaletteMount />
       <Sidebar
         name={name}
         email={email}

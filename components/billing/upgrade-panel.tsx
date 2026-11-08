@@ -7,6 +7,7 @@ import {
   CheckoutButton,
   CheckoutFrame,
   CheckoutProvider,
+  PromoCodeInput,
 } from "@/components/marketing/checkout-flow";
 
 const PLAN_FEATURES: Record<PaidPlanId, string[]> = {
@@ -117,9 +118,14 @@ export function UpgradePanel({
                   Current plan
                 </div>
               ) : (
-                <CheckoutButton>
-                  Pay securely — start {planName}
-                </CheckoutButton>
+                <>
+                  <PromoCodeInput />
+                  <div className="mt-4">
+                    <CheckoutButton>
+                      Pay securely — start {planName}
+                    </CheckoutButton>
+                  </div>
+                </>
               )}
             </div>
           </div>

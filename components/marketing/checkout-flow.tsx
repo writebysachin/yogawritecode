@@ -9,7 +9,7 @@ import {
   useRef,
   useState,
 } from "react";
-import { ArrowRight, Loader2, Lock, RotateCcw, ShieldCheck } from "lucide-react";
+import { ArrowRight, Loader2, Lock, RotateCcw, ShieldCheck, Tag } from "lucide-react";
 import type { BillingCycle, PaidPlanId } from "@/lib/dodo";
 
 /**
@@ -59,6 +59,8 @@ async function loadCheckoutSdk(mode: "test" | "live") {
 type CheckoutContextValue = {
   status: Status;
   error: string | null;
+  discountCode: string;
+  setDiscountCode: (code: string) => void;
   start: () => void;
   reset: () => void;
 };
@@ -84,6 +86,7 @@ export function CheckoutProvider({
 }) {
   const [status, setStatus] = useState<Status>("idle");
   const [error, setError] = useState<string | null>(null);
+  const [discountCode, setDiscountCode] = useState("");
 
   const handleEvent = useCallback((event: CheckoutEvent) => {
     switch (event.event_type) {
@@ -132,7 +135,7 @@ export function CheckoutProvider({
         const response = await fetch("/api/checkout", {
           method: "POST",
           headers: { "content-type": "application/json" },
-          body: JSON.stringify({ plan, cycle }),
+          body: JSON.stringify({ plan, cycle, ...(discountCode.trim() ? { discount_code: discountCode.trim() } : {}) }),
         });
         const data = (await response.json().catch(() => ({}))) as {
           checkoutUrl?: string;
@@ -167,7 +170,7 @@ export function CheckoutProvider({
     return () => {
       cancelled = true;
     };
-  }, [status, plan, cycle]);
+  }, [status, plan, cycle, discountCode]);
 
   useEffect(
     () => () => {
@@ -202,8 +205,8 @@ export function CheckoutProvider({
   }, []);
 
   const value = useMemo(
-    () => ({ status, error, start, reset }),
-    [status, error, start, reset],
+    () => ({ status, error, discountCode, setDiscountCode, start, reset }),
+    [status, error, discountCode, start, reset],
   );
 
   return <CheckoutContext.Provider value={value}>{children}</CheckoutContext.Provider>;
@@ -232,7 +235,46 @@ export function CheckoutButton({ children }: { children: React.ReactNode }) {
   );
 }
 
-export function CheckoutFrame({
+export function PromoCodeInput() {
+  const { status, discountCode, setDiscountCode } = useCheckout();
+  const locked = status !== "idle";
+
+  return (
+    <div className="mt-4">
+      <label className="mb-1.5 flex items-center gap-1.5 text-xs font-medium text-ink-secondary">
+        <Tag size={12} />
+        Promo code <span className="text-ink-muted">(optional)</span>
+      </label>
+      <div className="flex gap-2">
+        <input
+          type="text"
+          value={discountCode}
+          onChange={(e) => setDiscountCode(e.target.value.toUpperCase())}
+          disabled={locked}
+          placeholder="e.g. LAUNCH20"
+          className="h-9 min-w-0 flex-1 rounded-field border border-line bg-surface px-3 text-sm tracking-wider text-ink placeholder-ink-muted outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/20 disabled:cursor-not-allowed disabled:opacity-50"
+        />
+        {discountCode.trim() && !locked && (
+          <button
+            type="button"
+            onClick={() => setDiscountCode("")}
+            className="h-9 rounded-field border border-line px-3 text-xs font-medium text-ink-muted transition hover:border-line-strong hover:text-ink"
+          >
+            Clear
+          </button>
+        )}
+      </div>
+      {discountCode.trim() && locked && (
+        <p className="mt-1.5 flex items-center gap-1 text-xs text-success">
+          <span className="h-1.5 w-1.5 rounded-full bg-success" />
+          Code &ldquo;{discountCode}&rdquo; will be applied at checkout
+        </p>
+      )}
+    </div>
+  );
+}
+
+
   planName,
   price,
   unit,
@@ -241,7 +283,7 @@ export function CheckoutFrame({
   price: string;
   unit: string;
 }) {
-  const { status, error, reset, start } = useCheckout();
+  const { status, error, reset, start, discountCode, setDiscountCode } = useCheckout();
   const sectionRef = useRef<HTMLElement>(null);
 
   useEffect(() => {
@@ -252,6 +294,7 @@ export function CheckoutFrame({
   if (status === "idle") return null;
 
   const loading = status === "creating";
+  const locked = status !== "idle" && status !== "error";
 
   return (
     <section
@@ -278,6 +321,39 @@ export function CheckoutFrame({
       </header>
 
       <div className="px-4 py-5 sm:px-6">
+        {/* Promo code row */}
+        <div className="mb-4">
+          <label className="mb-1.5 flex items-center gap-1.5 text-xs font-medium text-ink-secondary">
+            <Tag size={12} />
+            Promo code
+          </label>
+          <div className="flex gap-2">
+            <input
+              type="text"
+              value={discountCode}
+              onChange={(e) => setDiscountCode(e.target.value.toUpperCase())}
+              disabled={locked}
+              placeholder="Enter code"
+              className="h-9 min-w-0 flex-1 rounded-field border border-line bg-surface px-3 text-sm tracking-wider text-ink placeholder-ink-muted outline-none transition focus:border-brand focus:ring-2 focus:ring-brand/20 disabled:cursor-not-allowed disabled:opacity-50"
+            />
+            {discountCode.trim() && !locked && (
+              <button
+                type="button"
+                onClick={() => setDiscountCode("")}
+                className="h-9 rounded-field border border-line px-3 text-xs font-medium text-ink-muted transition hover:border-line-strong hover:text-ink"
+              >
+                Clear
+              </button>
+            )}
+          </div>
+          {discountCode.trim() && locked && (
+            <p className="mt-1.5 flex items-center gap-1 text-xs text-success">
+              <span className="h-1.5 w-1.5 rounded-full bg-success" />
+              Code &ldquo;{discountCode}&rdquo; applied
+            </p>
+          )}
+        </div>
+
         {error ? (
           <div className="mx-auto max-w-md text-center">
             <p className="text-sm text-error">{error}</p>
