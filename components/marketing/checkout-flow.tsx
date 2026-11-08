@@ -275,6 +275,7 @@ export function PromoCodeInput() {
 }
 
 
+export function CheckoutFrame({
   planName,
   price,
   unit,
@@ -294,7 +295,7 @@ export function PromoCodeInput() {
   if (status === "idle") return null;
 
   const loading = status === "creating";
-  const locked = status !== "idle" && status !== "error";
+  const locked = status !== "error";
 
   return (
     <section
