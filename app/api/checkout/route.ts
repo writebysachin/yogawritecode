@@ -118,7 +118,7 @@ export async function POST(request: Request) {
         },
       },
       feature_flags: {
-        allow_discount_code: true,
+        allow_discount_code: false,
         allow_customer_editing_email: true,
         allow_customer_editing_name: true,
       },
