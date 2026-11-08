@@ -64,7 +64,7 @@ export function SiteFooter() {
           <div className="flex flex-col gap-5">
             <div className="flex items-center gap-3">
               <MarketingBrand />
-              <p className="text-sm font-bold text-ink">Turn your website into your next five articles.</p>
+              <p className="text-sm font-bold text-ink-secondary">Turn your website into your next five articles.</p>
             </div>
             <div>
               <p className="text-sm font-semibold text-ink">Get one useful idea every week</p>
