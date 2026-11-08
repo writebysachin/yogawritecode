@@ -75,6 +75,22 @@ export function SiteFooter() {
                 <FooterSubscribe />
               </div>
             </div>
+            <a
+              href="https://dang.ai"
+              target="_blank"
+              rel="dofollow noopener"
+              className="mt-1 inline-block"
+              aria-label="Verified on DANG!"
+            >
+              {/* eslint-disable-next-line @next/next/no-img-element */}
+              <img
+                src="https://assets.dang.ai/badges/dang-verified-dark.png"
+                alt="Verified on DANG!"
+                width={160}
+                height={58}
+                style={{ display: "block", width: "160px", maxWidth: "100%", height: "auto", border: 0 }}
+              />
+            </a>
           </div>
 
           {/* Nav links on the right */}
