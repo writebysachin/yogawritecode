@@ -3,6 +3,8 @@ import Link from "next/link";
 import { PageHeader } from "@/components/page-header";
 import { getUserDisplayName } from "@/lib/auth/user";
 import { getPlanStatus } from "@/lib/plan";
+import { getSubscription } from "@/lib/billing/subscription";
+import { PLAN_NAMES } from "@/lib/dodo";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
 
 export const metadata: Metadata = { title: "Account Settings" };
@@ -21,14 +23,36 @@ export default async function SettingsPage() {
     ? getUserDisplayName(data.user, profile?.full_name)
     : "Your account";
   const email = data.user?.email ?? "";
+
+  const subscription = await getSubscription();
   const profileRow = profile as { subscription_status?: string | null } | null;
   const planStatus = getPlanStatus(data.user, 0, profileRow?.subscription_status);
   const isPro = planStatus.isPro;
+
+  // Resolve the display name for the current plan
+  const currentPlan = subscription.current_plan; // "pro" | "scale" | null
   const planLabel = planStatus.isTrialActive
     ? `Pro Trial (${planStatus.daysLeftInTrial} days left)`
     : isPro
-      ? "Pro Writer"
+      ? currentPlan === "scale"
+        ? PLAN_NAMES.scale
+        : currentPlan === "pro"
+          ? PLAN_NAMES.pro
+          : "Pro"
       : "Starter (Free)";
+
+  // Only show upgrade if not already on the top plan
+  const isOnScale = isPro && currentPlan === "scale";
+  const upgradeLabel = isOnScale
+    ? null
+    : isPro && currentPlan === "pro"
+      ? "Upgrade to Scale"
+      : "Upgrade to Pro";
+  const upgradeHref = isOnScale
+    ? null
+    : isPro && currentPlan === "pro"
+      ? "/dashboard/upgrade?plan=scale"
+      : "/dashboard/upgrade";
 
   return (
     <>
@@ -56,21 +80,21 @@ export default async function SettingsPage() {
               <p className="text-xs font-medium uppercase tracking-[0.12em] text-ink-muted">Plan</p>
               <p className="mt-1 text-sm text-ink">{planLabel}</p>
             </div>
-            {!isPro ? (
+            {isOnScale ? (
               <Link
-                href="/dashboard/upgrade"
-                className="inline-flex h-10 items-center justify-center rounded-field bg-brand px-4 text-sm font-medium text-white transition-colors hover:bg-brand-hover"
-              >
-                Upgrade to Pro
-              </Link>
-            ) : (
-              <Link
-                href="/dashboard/upgrade"
+                href="/dashboard/pricing"
                 className="text-sm font-medium text-brand underline underline-offset-4"
               >
                 Manage plan
               </Link>
-            )}
+            ) : upgradeLabel && upgradeHref ? (
+              <Link
+                href={upgradeHref}
+                className="inline-flex h-10 items-center justify-center rounded-field bg-brand px-4 text-sm font-medium text-white transition-colors hover:bg-brand-hover"
+              >
+                {upgradeLabel}
+              </Link>
+            ) : null}
           </div>
           <p className="mt-4 border-t border-line pt-4 text-xs text-ink-muted">
             Payments are processed by Dodo Payments. Read our{" "}

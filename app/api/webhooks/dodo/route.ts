@@ -241,9 +241,14 @@ export async function POST(request: Request) {
         return NextResponse.json({ received: true });
       }
 
+      const rawPlan = typeof metadata.plan === "string" ? metadata.plan.trim() : null;
+      const metaPlan =
+        rawPlan === "starter" || rawPlan === "pro" || rawPlan === "scale" ? rawPlan : null;
+
       const patch: Record<string, string> = { subscription_status: "active" };
       if (subscriptionId) patch.dodo_subscription_id = subscriptionId;
       if (customerId) patch.dodo_customer_id = customerId;
+      if (metaPlan) patch.current_plan = metaPlan;
 
       const { matched, error } = await updateProfile(supabase, patch, {
         appUserId,

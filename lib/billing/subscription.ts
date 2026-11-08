@@ -29,12 +29,15 @@ export type Subscription = {
   ai_credits: number;
   /** The Dodo subscription id, once the user has paid. */
   dodo_subscription_id: string | null;
+  /** The paid plan the user is currently on — `null` for free accounts. */
+  current_plan: string | null;
 };
 
 const FREE_SUBSCRIPTION: Subscription = {
   subscription_status: FREE_TIER_STATUS,
   ai_credits: DEFAULT_AI_CREDITS,
   dodo_subscription_id: null,
+  current_plan: null,
 };
 
 type ProfileRow = {
@@ -43,6 +46,7 @@ type ProfileRow = {
   ai_credits_balance?: number | null;
   dodo_customer_id?: string | null;
   dodo_subscription_id?: string | null;
+  current_plan?: string | null;
 };
 
 /**
@@ -53,6 +57,7 @@ type ProfileRow = {
  * dashboard working before (and after) the billing migration is applied.
  */
 const PROFILE_SELECTS = [
+  "subscription_status, ai_credits, ai_credits_balance, dodo_customer_id, dodo_subscription_id, current_plan",
   "subscription_status, ai_credits, ai_credits_balance, dodo_customer_id, dodo_subscription_id",
   "subscription_status, ai_credits_balance, dodo_customer_id, dodo_subscription_id",
   "subscription_status, ai_credits, dodo_subscription_id",
@@ -124,6 +129,10 @@ function toSubscription(row: ProfileRow | null): Subscription {
     toFiniteNumber(row.ai_credits) ??
     DEFAULT_AI_CREDITS;
 
+  const rawPlan = typeof row.current_plan === "string" ? row.current_plan.trim() : null;
+  const currentPlan =
+    rawPlan === "starter" || rawPlan === "pro" || rawPlan === "scale" ? rawPlan : null;
+
   return {
     subscription_status: status,
     ai_credits: credits,
@@ -131,6 +140,7 @@ function toSubscription(row: ProfileRow | null): Subscription {
       typeof row.dodo_subscription_id === "string" && row.dodo_subscription_id.trim()
         ? row.dodo_subscription_id.trim()
         : null,
+    current_plan: currentPlan,
   };
 }
 

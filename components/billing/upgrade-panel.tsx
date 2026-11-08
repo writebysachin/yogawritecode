@@ -62,13 +62,15 @@ export function UpgradePanel({
   autoStart?: boolean;
 }) {
   const isPro = isProSubscription(subscription.subscription_status);
+  // True only when the user is already on this exact plan
+  const isCurrentPlan = isPro && subscription.current_plan === plan;
   const features = PLAN_FEATURES[plan];
   const price = cycle === "yearly" ? PLAN_PRICES[plan].yearly : PLAN_PRICES[plan].monthly;
   const unit = cycle === "yearly" ? "/ year" : "/ month";
   const planName = PLAN_NAMES[plan];
 
   return (
-    <CheckoutProvider plan={plan} cycle={cycle} autoStart={!isPro && autoStart}>
+    <CheckoutProvider plan={plan} cycle={cycle} autoStart={!isCurrentPlan && autoStart}>
       <div className="min-w-0">
         <PageHeader
           title={`Upgrade to ${planName}`}
@@ -112,7 +114,7 @@ export function UpgradePanel({
             </ul>
 
             <div className="mt-6 border-t border-line pt-5">
-              {isPro ? (
+              {isCurrentPlan ? (
                 <div className="flex items-center justify-center gap-2 rounded-lg bg-[#DCFCE7] px-6 py-3 text-sm font-semibold text-[#15803D]">
                   <Check size={16} />
                   Current plan
@@ -135,7 +137,7 @@ export function UpgradePanel({
           </p>
         </div>
 
-        {!isPro ? (
+        {!isCurrentPlan ? (
           <CheckoutFrame planName={planName} price={price} unit={unit} />
         ) : null}
       </div>
