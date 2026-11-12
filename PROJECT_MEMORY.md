@@ -62,6 +62,7 @@
 | Variable | Purpose |
 |---|---|
 | `NEXT_PUBLIC_SITE_URL` | `https://yogawritecode.com` (no trailing space!) |
+| `NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN` | PostHog public project token (`phc_...`). Inlined into the browser bundle at build time, so redeploy after you change it |
 | `NEXT_PUBLIC_SUPABASE_URL` | Supabase project URL |
 | `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Supabase anon/publishable key |
 | `SUPABASE_SERVICE_ROLE_KEY` | For webhook handler (unauthenticated context) |

@@ -1,12 +1,18 @@
 import posthog from "posthog-js";
 
+// Public project token. NEXT_PUBLIC_* vars are inlined at build time, so a build without the var must still capture.
+const DEFAULT_PROJECT_TOKEN = "phc_rCBwSrW7nsp8xoEtfFYeAQWUcR4Kj9GamEHzw2amJsrE";
+
 let initialized = false;
 
 /** Initialize PostHog once. Call only after the visitor accepts analytics cookies. */
 export function initPostHog() {
   if (initialized || typeof window === "undefined") return;
-  const token = process.env.NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN;
-  if (!token) return;
+  let token = process.env.NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN;
+  if (!token) {
+    console.warn("[posthog] NEXT_PUBLIC_POSTHOG_PROJECT_TOKEN is not set at build time; using the default project token.");
+    token = DEFAULT_PROJECT_TOKEN;
+  }
   initialized = true;
   posthog.init(token, {
     api_host: process.env.NEXT_PUBLIC_POSTHOG_HOST || "/ingest",
