@@ -5,6 +5,7 @@ export const metadata: Metadata = {
   title: "Yoga Write Code vs The Competition | Best AI SEO Tool",
   description:
     "See why Yoga Write Code is the smarter alternative to legacy SEO tools. Full 5-step content pipeline vs just text generation.",
+  alternates: { canonical: "/compare" },
 };
 
 const competitors = [

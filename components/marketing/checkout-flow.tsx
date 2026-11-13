@@ -146,10 +146,17 @@ export function CheckoutProvider({
 
         if (!response.ok || !data.checkoutUrl) {
           if (data.fallbackUrl) {
+            // Show a brief message before redirecting to the hosted checkout page
+            console.log("[checkout] session failed, redirecting to hosted checkout:", data.fallbackUrl);
             window.location.assign(data.fallbackUrl);
             return;
           }
-          throw new Error(data.error ?? "Checkout couldn't be prepared.");
+          const errMsg = response.status === 401
+            ? "Please sign in to continue to checkout."
+            : response.status === 503
+            ? "Checkout is being set up. Redirecting to payment page…"
+            : (data.error ?? "Checkout couldn't be prepared. Please try again.");
+          throw new Error(errMsg);
         }
 
         const DodoPayments = await loadCheckoutSdk(data.mode === "test" ? "test" : "live");

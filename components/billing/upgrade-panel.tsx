@@ -127,6 +127,23 @@ export function UpgradePanel({
                       Pay securely — start {planName}
                     </CheckoutButton>
                   </div>
+                  <p className="mt-3 text-center text-xs text-ink-muted">
+                    Payment not loading?{" "}
+                    <a
+                      href={`/dashboard/upgrade?plan=${plan}&cycle=${cycle}`}
+                      className="underline underline-offset-4 hover:text-ink"
+                    >
+                      Reload this page
+                    </a>{" "}
+                    or email{" "}
+                    <a
+                      href="mailto:hello@yogawritecode.com"
+                      className="underline underline-offset-4 hover:text-ink"
+                    >
+                      hello@yogawritecode.com
+                    </a>
+                    .
+                  </p>
                 </>
               )}
             </div>
