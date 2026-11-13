@@ -20,7 +20,31 @@ const bodySchema = z.object({
     .max(5_000, "That message is too long (5,000 characters max)."),
 });
 
+// Simple in-memory rate limiter: 5 requests per IP per minute
+const ipRequestCounts = new Map<string, { count: number; resetAt: number }>();
+
+function isRateLimited(ip: string): boolean {
+  const now = Date.now();
+  const entry = ipRequestCounts.get(ip);
+  if (!entry || now > entry.resetAt) {
+    ipRequestCounts.set(ip, { count: 1, resetAt: now + 60_000 });
+    return false;
+  }
+  if (entry.count >= 5) return true;
+  entry.count++;
+  return false;
+}
+
 export async function POST(request: Request) {
+  const forwarded = request.headers.get("x-forwarded-for");
+  const ip = forwarded ? forwarded.split(",")[0].trim() : "unknown";
+  if (isRateLimited(ip)) {
+    return NextResponse.json(
+      { error: "Too many requests. Please wait a minute before trying again." },
+      { status: 429 },
+    );
+  }
+
   let payload: unknown;
   try {
     payload = await request.json();

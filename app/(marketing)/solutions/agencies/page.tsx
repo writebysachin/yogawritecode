@@ -1,4 +1,12 @@
+import type { Metadata } from "next";
 import Link from "next/link";
+
+export const metadata: Metadata = {
+  title: "Content Solutions for Agencies | Yoga Write Code",
+  description:
+    "Scale your content delivery with structured SEO workflows built for agencies. AI-powered content planning from website analysis to publishable outlines.",
+  alternates: { canonical: "/solutions/agencies" },
+};
 
 export default function AgenciesPage() {
   return (

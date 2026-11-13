@@ -17,6 +17,8 @@ export default function robots(): MetadataRoute.Robots {
       { userAgent: "Googlebot",     allow: "/" },
       { userAgent: "anthropic-ai",  allow: "/" },
       { userAgent: "CCBot",         allow: "/" },
+      { userAgent: "OAI-SearchBot", allow: "/" },
+      { userAgent: "ChatGPT-User",  allow: "/" },
     ],
     sitemap: new URL("/sitemap.xml", siteBaseUrl).toString(),
   };

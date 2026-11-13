@@ -29,8 +29,28 @@ export default function PaymentSuccessPage() {
           Payment Successful!
         </h1>
         <p className="mt-2 text-sm leading-6 text-ink-secondary">
-          Your Pro access activates within a few seconds.
+          Thank you — your subscription is confirmed. Your plan is being activated now.
         </p>
+
+        <div className="mt-5 rounded-lg border border-line bg-surface-subtle px-4 py-3 text-left">
+          <p className="text-xs font-medium text-ink-secondary">What happens next</p>
+          <ul className="mt-2 space-y-1.5 text-xs text-ink-muted">
+            <li className="flex items-start gap-2">
+              <span className="mt-0.5 h-1.5 w-1.5 shrink-0 rounded-full bg-brand" />
+              Your subscription is activated automatically via a secure payment webhook — this
+              usually takes a few seconds.
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="mt-0.5 h-1.5 w-1.5 shrink-0 rounded-full bg-brand" />
+              Head to the dashboard; if your plan hasn&apos;t updated yet, wait a moment and
+              refresh the page.
+            </li>
+            <li className="flex items-start gap-2">
+              <span className="mt-0.5 h-1.5 w-1.5 shrink-0 rounded-full bg-brand" />
+              A receipt will be emailed to you by Dodo Payments.
+            </li>
+          </ul>
+        </div>
 
         <div className="mt-6 flex flex-col gap-2.5">
           <Link
@@ -39,7 +59,23 @@ export default function PaymentSuccessPage() {
           >
             Continue to dashboard
           </Link>
+          <Link
+            href="/dashboard/settings"
+            className="inline-flex h-10 items-center justify-center rounded-field border border-line bg-surface px-4 text-sm font-medium text-ink transition-colors hover:bg-surface-subtle"
+          >
+            View account &amp; billing
+          </Link>
         </div>
+
+        <p className="mt-5 text-xs text-ink-muted">
+          Something look wrong?{" "}
+          <a
+            href="mailto:hello@yogawritecode.com"
+            className="underline underline-offset-4 hover:text-ink"
+          >
+            hello@yogawritecode.com
+          </a>
+        </p>
       </div>
     </div>
   );

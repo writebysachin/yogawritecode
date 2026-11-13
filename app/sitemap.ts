@@ -17,6 +17,14 @@ export default function sitemap(): MetadataRoute.Sitemap {
     { path: "/resources/faqs",      priority: 0.6, changeFrequency: "monthly" as const },
     { path: "/contact",             priority: 0.5, changeFrequency: "monthly" as const },
     { path: "/signup",              priority: 0.7, changeFrequency: "monthly" as const },
+    // Free tools
+    { path: "/tools",                           priority: 0.8, changeFrequency: "monthly" as const },
+    { path: "/tools/readability-checker",       priority: 0.7, changeFrequency: "monthly" as const },
+    { path: "/tools/word-counter",              priority: 0.7, changeFrequency: "monthly" as const },
+    { path: "/tools/keyword-density",           priority: 0.7, changeFrequency: "monthly" as const },
+    { path: "/tools/title-tag-checker",         priority: 0.7, changeFrequency: "monthly" as const },
+    { path: "/tools/meta-description-checker",  priority: 0.7, changeFrequency: "monthly" as const },
+    { path: "/tools/sentence-analyzer",         priority: 0.7, changeFrequency: "monthly" as const },
     // AI-optimized pages
     { path: "/sitemap-page",        priority: 0.5, changeFrequency: "monthly" as const },
     { path: "/ai-content-topics",   priority: 0.7, changeFrequency: "monthly" as const },

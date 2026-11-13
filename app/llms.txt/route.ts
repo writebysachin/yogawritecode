@@ -65,8 +65,17 @@ export function GET() {
     lines.push("");
   }
 
+  lines.push("## Free tools", "");
+  lines.push(`- [Free SEO & Content Tools](${new URL("/tools", siteBaseUrl).toString()})`);
+  lines.push(`- [Readability Score Checker](${new URL("/tools/readability-checker", siteBaseUrl).toString()})`);
+  lines.push(`- [Word Counter](${new URL("/tools/word-counter", siteBaseUrl).toString()})`);
+  lines.push(`- [Keyword Density Checker](${new URL("/tools/keyword-density", siteBaseUrl).toString()})`);
+  lines.push(`- [Title Tag Checker](${new URL("/tools/title-tag-checker", siteBaseUrl).toString()})`);
+  lines.push("");
+
   lines.push("## Optional", "");
   lines.push(`- [XML sitemap](${new URL("/sitemap.xml", siteBaseUrl).toString()})`);
+  lines.push(`- [Extended AI manifest (llms-full.txt)](${new URL("/llms-full.txt", siteBaseUrl).toString()})`);
   lines.push("");
 
   return new Response(lines.join("\n"), {

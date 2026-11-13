@@ -6,6 +6,7 @@ import { getPlanStatus } from "@/lib/plan";
 import { getSubscription } from "@/lib/billing/subscription";
 import { PLAN_NAMES } from "@/lib/dodo";
 import { createSupabaseServerClient } from "@/lib/supabase/server";
+import { DeleteAccountButton } from "@/components/dashboard/delete-account-button";
 
 export const metadata: Metadata = { title: "Account Settings" };
 
@@ -122,10 +123,47 @@ export default async function SettingsPage() {
         </section>
 
         <section className="rounded-card border border-line bg-surface p-6">
+          <h2 className="font-sans text-lg font-semibold tracking-tight text-ink">Notifications</h2>
+          <div className="mt-4 space-y-3">
+            <div className="flex items-center justify-between gap-4">
+              <div>
+                <p className="text-sm font-medium text-ink">Product updates</p>
+                <p className="text-xs text-ink-muted">New features, improvements, and changelog notes.</p>
+              </div>
+              <span className="inline-flex items-center rounded-full bg-success-soft px-2.5 py-1 text-xs font-medium text-success">On</span>
+            </div>
+            <div className="flex items-center justify-between gap-4 border-t border-line pt-3">
+              <div>
+                <p className="text-sm font-medium text-ink">Credit &amp; billing alerts</p>
+                <p className="text-xs text-ink-muted">When credits run low or a payment needs attention.</p>
+              </div>
+              <span className="inline-flex items-center rounded-full bg-success-soft px-2.5 py-1 text-xs font-medium text-success">On</span>
+            </div>
+            <p className="pt-1 text-xs text-ink-muted">
+              To update email preferences, contact{" "}
+              <a href="mailto:hello@yogawritecode.com" className="underline underline-offset-4 hover:text-ink">
+                hello@yogawritecode.com
+              </a>
+              .
+            </p>
+          </div>
+        </section>
+
+        <section className="rounded-card border border-line bg-surface p-6">
           <h2 className="font-sans text-lg font-semibold tracking-tight text-ink">Support</h2>
           <p className="mt-2 text-sm text-ink-secondary">
             Questions or feedback? Email us at support@yogawritecode.com.
           </p>
+        </section>
+
+        <section className="rounded-card border border-error/20 bg-surface p-6">
+          <h2 className="font-sans text-lg font-semibold tracking-tight text-ink">Danger Zone</h2>
+          <p className="mt-2 text-sm text-ink-secondary">
+            Permanently delete your account and all associated data. This action cannot be undone.
+          </p>
+          <div className="mt-4">
+            <DeleteAccountButton />
+          </div>
         </section>
       </div>
     </>

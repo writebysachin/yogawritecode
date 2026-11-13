@@ -41,6 +41,21 @@ function nameFromMetadata(metadata: Record<string, unknown> | undefined): Custom
   return undefined;
 }
 
+// Simple in-memory rate limiter: 10 requests per IP per minute
+const ipRequestCounts = new Map<string, { count: number; resetAt: number }>();
+
+function isRateLimited(ip: string): boolean {
+  const now = Date.now();
+  const entry = ipRequestCounts.get(ip);
+  if (!entry || now > entry.resetAt) {
+    ipRequestCounts.set(ip, { count: 1, resetAt: now + 60_000 });
+    return false;
+  }
+  if (entry.count >= 10) return true;
+  entry.count++;
+  return false;
+}
+
 export async function POST(request: Request) {
   const supabase = await createSupabaseServerClient();
   const { data: userData } = await supabase.auth.getUser();
@@ -48,6 +63,15 @@ export async function POST(request: Request) {
 
   if (!user?.email) {
     return NextResponse.json({ error: "Sign in to continue to checkout." }, { status: 401 });
+  }
+
+  const forwarded = request.headers.get("x-forwarded-for");
+  const ip = forwarded ? forwarded.split(",")[0].trim() : "unknown";
+  if (isRateLimited(ip)) {
+    return NextResponse.json(
+      { error: "Too many requests. Please wait a minute before trying again." },
+      { status: 429 },
+    );
   }
 
   let payload: unknown = {};
